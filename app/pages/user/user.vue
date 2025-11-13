@@ -54,9 +54,7 @@
 		{ id: 1, name: '我的订单', icon: 'list', path: '/pages/user/orders/my-orders' },
 		{ id: 2, name: '我的钱包', icon: 'wallet', path: '/pages/user/wallet' },
 		{ id: 3, name: '我的地址', icon: 'location', path: '/pages/user/address/address' },
-		{ id: 4, name: '设置', icon: 'gear', path: '/pages/settings/index' },
-		{ id: 5, name: '帮助中心', icon: 'help', path: '/pages/help/index' },
-		{ id: 6, name: '关于我们', icon: 'info', path: '/pages/about/index' }
+		{ id: 4, name: '设置', icon: 'gear', path: '/pages/settings/index' }
 	]);
 
 	const goToProfile = () => {

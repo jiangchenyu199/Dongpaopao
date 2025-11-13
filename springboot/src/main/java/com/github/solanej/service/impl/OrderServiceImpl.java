@@ -227,19 +227,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public R progressingOrder(String type, String uid) {
-
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<Order>()
-                .eq(Order::getStatus, 'J')
-                .orderByDesc(Order::getAcceptTime);
-
-        if (type == null) {
-            wrapper.eq(Order::getXdr, uid).or().eq(Order::getJdr, uid);
-        } else if ("xdr".equals(type)) {
-            wrapper.eq(Order::getXdr, uid);
-        } else if ("jdr".equals(type)) {
-            wrapper.eq(Order::getJdr, uid);
-        }
-
-        return R.success(orderMapper.selectList(wrapper));
+        return R.success(orderMapper.processingOrder(type, uid));
     }
 }

@@ -365,7 +365,7 @@
 			return;
 		}
 
-		const wsUrl = `ws://localhost:8181/api/ws`;
+		const wsUrl = `wss://localhost:8181/api/ws`;
 
 		socketTask.value = uni.connectSocket({
 			url: wsUrl,

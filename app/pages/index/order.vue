@@ -1,10 +1,10 @@
 <template>
 	<view class="page-container">
 		<!-- 根据订单类型显示不同的业务组件 -->
-		<Express v-if="type==='E'" ref="businessRef" />
-		<Takeaway v-if="type==='T'" ref="businessRef" />
-		<Carry v-if="type==='C'" ref="businessRef" />
-		<Purchasing v-if="type==='P'" ref="businessRef" />
+		<Express  ref="businessRef" />
+		<Takeaway ref="businessRef" />
+		<Carry ref="businessRef" />
+		<Purchasing  ref="businessRef" />
 
 		<!-- 配送信息区域 -->
 		<DeliverInfo ref="deliverInfoRef" />
@@ -34,8 +34,15 @@
 
 	const userStore = useUserStore()
 
+	const formData = ref({})
+
 	onLoad((options) => {
-		type.value = options.type || ''
+		// 初始化表单
+		request({
+			url: '/service/detail?serviceId=' + options.serviceId
+		}).then((res) => {
+			formData.value = res.data
+		})
 	})
 
 	const businessRef = ref(null);
