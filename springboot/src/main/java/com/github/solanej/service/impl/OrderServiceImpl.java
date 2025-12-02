@@ -38,6 +38,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public R createOrder(JSONObject params) {
+        JSONObject formData = params.getJSONObject("formData");
         JSONObject deliverInfo = params.getJSONObject("deliverInfo");
         JSONObject feeInfo = params.getJSONObject("feeInfo");
 
@@ -62,12 +63,11 @@ public class OrderServiceImpl implements OrderService {
         // 2. 创建订单
         Order order = new Order();
         order.setXdr(uid);
-        order.setOrderType(params.getString("type").charAt(0));
-        order.setExpectTime(params.getLocalDateTime("expectTime"));
+        order.setServiceId(params.getString("serviceId"));
+        order.setExpectTime(deliverInfo.getLocalDateTime("expectTime"));
         order.setAid(deliverInfo.getString("aid"));
-        order.setDetail(params.getString("businessInfo"));
+        order.setDetail(formData.toString());
         order.setAmount(totalFee);
-        order.setStatus('D');
         order.setCreateTime(LocalDateTime.now());
 
         int insertResult = orderMapper.insert(order);

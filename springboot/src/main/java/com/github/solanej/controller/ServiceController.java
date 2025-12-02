@@ -1,6 +1,5 @@
 package com.github.solanej.controller;
 
-import com.alibaba.fastjson2.JSON;
 import com.github.solanej.common.R;
 import com.github.solanej.entity.Service;
 import com.github.solanej.service.ServiceService;
@@ -22,7 +21,7 @@ public class ServiceController {
         Service service = new Service();
         service.setIcon("🎂");
         service.setBgColor("#AAAAAA");
-        service.setEnable(true);
+        service.setEnabled(true);
         serviceService.saveOrUpdate(service);
         return R.success();
     }

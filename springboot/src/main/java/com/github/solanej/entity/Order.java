@@ -29,6 +29,8 @@ public class Order {
 
     private Character orderType;
 
+    private String serviceId;
+
     private String aid;
 
     private String detail;

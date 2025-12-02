@@ -1,16 +1,26 @@
 <template>
 	<view class="page-container">
-		<!-- 根据订单类型显示不同的业务组件 -->
-		<Express  ref="businessRef" />
-		<Takeaway ref="businessRef" />
-		<Carry ref="businessRef" />
-		<Purchasing  ref="businessRef" />
+		<!-- 订单基本信息 -->
+		<view class="card">
+			<template #title>
+				<u-title>基本信息</u-title>
+			</template>
+			<u-form :model="formData" :rules="formRules" label-position="top" label-width="auto">
+				<u-form-item v-for="(item,index) in formTemplate" :label="item.label" :key="item.name">
+					<u-input v-model="formData[item.name]" :type="item.type" :maxlength="item.maxlength"
+						:prefix-icon="item.icon" :placeholder="item.placeholder" />
+				</u-form-item>
+			</u-form>
+		</view>
 
 		<!-- 配送信息区域 -->
 		<DeliverInfo ref="deliverInfoRef" />
 
 		<!-- 费用信息区域 -->
 		<FeeInfo ref="feeInfoRef" @submit="handleSubmit" />
+
+		<!-- TODO: 拆分结账模块 -->
+		<Checkout @submit="handleSubmit" />
 	</view>
 </template>
 
@@ -20,32 +30,34 @@
 
 	import { useUserStore } from '@/stores/user';
 
-	// 导入各种订单类型的组件
-	import Express from '@/components/orders/categories/express.vue';
-	import Takeaway from '@/components/orders/categories/takeaway.vue';
-	import Carry from '@/components/orders/categories/carry.vue'
-	import Purchasing from '@/components/orders/categories/purchasing.vue'
-
 	import DeliverInfo from '@/components/orders/deliverInfo.vue';
 	import FeeInfo from '@/components/orders/feeInfo.vue';
 	import request from '@/utils/request';
-
-	const type = ref('')
+	import form from '../../uni_modules/uview-plus/components/u-form/form';
 
 	const userStore = useUserStore()
 
-	const formData = ref({})
+	/* 服务类型id */
+	const serviceId : String = ref()
 
-	onLoad((options) => {
-		// 初始化表单
-		request({
-			url: '/service/detail?serviceId=' + options.serviceId
+	/* 表单模板 */
+	const formTemplate : Array = ref([])
+
+	/* 表单数据 */
+	const formData : Object = ref({})
+
+	/* TODO: 表单验证 */
+	const fromRules : Object = ref({})
+
+	onLoad(async (options) => {
+		serviceId.value = options.serviceId
+		await request({
+			url: '/service/detail?serviceId=' + serviceId.value
 		}).then((res) => {
-			formData.value = res.data
+			formTemplate.value = JSON.parse(res.data)
 		})
 	})
 
-	const businessRef = ref(null);
 	const deliverInfoRef = ref(null);
 	const feeInfoRef = ref(null);
 
@@ -54,32 +66,17 @@
 		const deliverInfo = deliverInfoRef.value?.getFormData ? deliverInfoRef.value.getFormData() : {};
 		const feeInfo = feeInfoRef.value?.getFeeData ? feeInfoRef.value.getFeeData() : {};
 
-		// 获取业务数据（如果存在）
-		const businessInfo = businessRef.value?.getBusinessData ? businessRef.value.getBusinessData() : {};
-
 		return {
-			type: type.value,
+			serviceId: serviceId.value,
 			uid: null,
-			businessInfo,
+			formData: formData.value,
 			deliverInfo,
 			feeInfo
 		};
 	};
 
-	// 验证表单
+	/* 验证表单 */
 	const validateForm = (formData : any) => {
-		// 验证业务表单
-		if (businessRef.value?.validateForm) {
-			const businessValid = businessRef.value.validateForm();
-			if (!businessValid) return false;
-		}
-
-		// 验证配送信息
-		if (deliverInfoRef.value?.validateForm) {
-			const deliverValid = deliverInfoRef.value.validateForm();
-			if (!deliverValid) return false;
-		}
-
 		return true;
 	};
 
@@ -138,5 +135,13 @@
 		flex-direction: column;
 		height: 100%;
 		background-color: #f7f7f7;
+	}
+
+	.card {
+		background-color: #fff;
+		border-radius: 12rpx;
+		padding: 30rpx;
+		margin-bottom: 20rpx;
+		box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
 	}
 </style>

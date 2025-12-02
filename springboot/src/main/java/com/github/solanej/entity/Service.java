@@ -2,7 +2,6 @@ package com.github.solanej.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.mysql.cj.xdevapi.JsonArray;
 import lombok.Data;
 
 @Data
@@ -19,5 +18,5 @@ public class Service {
 
     private String form;
 
-    private Boolean enable;
+    private Boolean enabled;
 }
