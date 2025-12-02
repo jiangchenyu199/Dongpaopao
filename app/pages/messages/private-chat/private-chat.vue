@@ -206,7 +206,7 @@
 
 	onLoad(async (options) => {
 		// 获取状态栏和导航栏高度
-		const systemInfo = uni.getSystemInfoSync();
+		const systemInfo = uni.getWindowInfo();
 		statusBarHeight.value = systemInfo.statusBarHeight || 0;
 		navbarHeight.value = 44; // 标准导航栏高度，可根据实际情况调整
 
