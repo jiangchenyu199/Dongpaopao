@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.github.solanej.mapper.OrderMapper">
+    <select id="getHallOrders" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT o.oid,
+        o.create_time as createTime,
+        o.expect_time as expectTime,
+        o.detail,
+        o.amount,
+        service.service_name as serviceName,
+        service.form as form,
+        service.bg_color as bgColor
+        FROM `order` o
+        LEFT JOIN service ON o.service_id = service.service_id
+        WHERE o.status = 'D'
+        AND o.xdr != #{uid}
+        <if test="serviceId != null and serviceId != ''">
+            AND o.service_id = #{serviceId}
+        </if>
+        ORDER BY o.create_time DESC
+    </select>
+    
     <select id="processingOrder" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT `order`.*, service.service_name
         FROM `order`

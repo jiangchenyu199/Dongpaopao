@@ -1,6 +1,5 @@
 package com.github.solanej.entity;
 
-import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -26,8 +24,6 @@ public class Order {
     private LocalDateTime createTime;
 
     private LocalDateTime expectTime;
-
-    private Character orderType;
 
     private String serviceId;
 

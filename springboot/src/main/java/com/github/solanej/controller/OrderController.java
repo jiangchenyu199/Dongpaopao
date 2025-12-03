@@ -45,9 +45,10 @@ public class OrderController {
      *
      * @param uid 用户id
      */
-    @GetMapping("/list")
-    public R listOrder(@RequestParam("uid") @Nullable String uid) {
-        return orderService.listOrder(uid);
+    @GetMapping("/hall")
+    public R hallOrders(@RequestParam("uid") @Nullable String uid,
+                        @RequestParam("serviceId") @Nullable String serviceId) {
+        return orderService.hallOrders(uid, serviceId);
     }
 
     /**

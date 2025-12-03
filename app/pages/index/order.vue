@@ -7,8 +7,8 @@
 			</template>
 			<u-form :model="formData" :rules="formRules" label-position="top" label-width="auto">
 				<u-form-item v-for="(item,index) in formTemplate" :label="item.label" :key="item.name">
-					<u-input v-model="formData[item.name]" :type="item.type" :maxlength="item.maxlength"
-						:prefix-icon="item.icon" :placeholder="item.placeholder" />
+					<u-input v-model="formData[item.name]" :type="item.inputType" :maxlength="item.maxlength"
+						:prefixIcon="item.icon" :placeholder="item.placeholder" />
 				</u-form-item>
 			</u-form>
 		</view>

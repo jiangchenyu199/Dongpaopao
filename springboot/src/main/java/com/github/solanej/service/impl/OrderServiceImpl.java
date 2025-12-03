@@ -176,13 +176,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public R listOrder(String uid) {
-        List<Order> orders = orderMapper.selectList(
-                new LambdaQueryWrapper<Order>()
-                        .ne(Order::getXdr, uid)
-                        .eq(Order::getStatus, 'D')
-                        .orderByDesc(Order::getCreateTime));
-        return R.success(orders);
+    public R hallOrders(String uid, String serviceId) {
+        List<JSONObject> hallOrders = orderMapper.getHallOrders(uid, serviceId);
+        return R.success(hallOrders);
     }
 
     @Override
@@ -201,9 +197,6 @@ public class OrderServiceImpl implements OrderService {
 
         if (status != null && !status.isEmpty()) {
             wrapper.eq(Order::getStatus, status.charAt(0));
-        }
-        if (type != null && !type.isEmpty()) {
-            wrapper.eq(Order::getOrderType, type.charAt(0));
         }
         wrapper.orderByDesc(Order::getCreateTime);
         return R.success(orderMapper.selectList(wrapper));
