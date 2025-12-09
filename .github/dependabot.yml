@@ -8,3 +8,7 @@ updates:
     open-pull-requests-limit: 5
     reviewers:
       - "user"
+    groups:
+      backend:
+        patterns:
+          - "*"
