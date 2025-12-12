@@ -41,7 +41,7 @@
 		},
         {
             "path": "pages/user/wallet"
-        }
+		}
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

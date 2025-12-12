@@ -13,6 +13,8 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     List<JSONObject> getHallOrders(@Param("uid") String uid, @Param("serviceId") String serviceId);
 
+    JSONObject detail(@Param("oid") String oid);
+
     List<JSONObject> processingOrder(@Param("type") String type, @Param("uid") String uid);
 
     List<JSONObject> getAdminOrderList(@Param("keyword") String keyword, @Param("status") String status);

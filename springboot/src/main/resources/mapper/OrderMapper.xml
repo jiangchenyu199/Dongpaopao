@@ -19,7 +19,15 @@
         </if>
         ORDER BY o.create_time DESC
     </select>
-    
+
+    <select id="detail" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT o.*, service.form, service.service_name, status.description AS status_name
+        FROM `order` as o
+        LEFT JOIN service ON o.service_id = service.service_id
+        LEFT JOIN order_status AS status ON o.status = status.status
+        WHERE o.oid = #{oid}
+    </select>
+
     <select id="processingOrder" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT `order`.*, service.service_name
         FROM `order`

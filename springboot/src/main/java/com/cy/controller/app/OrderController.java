@@ -71,8 +71,8 @@ public class OrderController {
      * @return 订单详情
      */
     @GetMapping("/detail")
-    public R detailOrder(@RequestParam("oid") String oid) {
-        return orderService.detailOrder(oid);
+    public R detail(@RequestParam("oid") String oid) {
+        return orderService.detail(oid);
     }
 
     /**

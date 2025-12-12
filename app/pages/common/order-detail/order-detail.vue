@@ -4,8 +4,9 @@
 			<!-- 订单状态卡片 -->
 			<view class="status-card">
 				<view class="status-info">
-					<text class="status-text">{{ getStatusText(orderDetail.status) }}</text>
-					<text class="order-type">{{ getOrderTypeText(orderDetail.orderType) }}</text>
+					<!-- 直接使用后端返回的状态名称 -->
+					<text class="status-text">{{ orderDetail.status_name || '未知状态' }}</text>
+					<text class="order-type">{{ orderDetail.service_name || '未知服务' }}</text>
 				</view>
 				<view class="order-id">订单号：{{ orderDetail.oid }}</view>
 			</view>
@@ -15,98 +16,41 @@
 				<view class="card-title">订单信息</view>
 				<view class="info-item">
 					<text class="label">下单时间</text>
-					<text class="value">{{ formatTime(orderDetail.createTime) }}</text>
+					<text class="value">{{ formatTime(orderDetail.create_time) }}</text>
 				</view>
 				<view class="info-item">
 					<text class="label">订单金额</text>
 					<text class="value price">¥{{ orderDetail.amount }}</text>
 				</view>
-				<view class="info-item" v-if="orderDetail.completeTime">
-					<text class="label">完成时间</text>
-					<text class="value">{{ formatTime(orderDetail.completeTime) }}</text>
-				</view>
-				<view class="info-item" v-if="orderDetail.expectTime">
-					<text class="label">期望送达时间</text>
-					<text class="value">{{ formatTime(orderDetail.expectTime) }}</text>
-				</view>
-				<view class="info-item" v-if="orderDetail.acceptTime">
+				<view class="info-item" v-if="orderDetail.accept_time">
 					<text class="label">接单时间</text>
-					<text class="value">{{ formatTime(orderDetail.acceptTime) }}</text>
+					<text class="value">{{ formatTime(orderDetail.accept_time) }}</text>
+				</view>
+				<view class="info-item" v-if="orderDetail.complete_time">
+					<text class="label">完成时间</text>
+					<text class="value">{{ formatTime(orderDetail.complete_time) }}</text>
+				</view>
+				<view class="info-item" v-if="orderDetail.expect_time">
+					<text class="label">期望送达时间</text>
+					<text class="value">{{ formatTime(orderDetail.expect_time) }}</text>
+				</view>
+				<view class="info-item" v-if="orderDetail.service_name">
+					<text class="label">服务类型</text>
+					<text class="value">{{ orderDetail.service_name }}</text>
 				</view>
 			</view>
 
-			<!-- 业务详情信息 -->
-			<view class="info-card" v-if="Object.keys(businessDetail).length > 0">
-				<view class="card-title">{{ getOrderTypeText(orderDetail.orderType) }}详情</view>
-
-				<!-- 快递代取 -->
-				<view v-if="orderDetail.orderType === 'E'">
-					<view class="info-item">
-						<text class="label">快递公司</text>
-						<text class="value">{{ businessDetail.company || '未知' }}</text>
-					</view>
-					<view class="info-item" v-if="showSensitiveInfo">
-						<text class="label">取件码</text>
-						<text class="value">{{ businessDetail.code || '无' }}</text>
-					</view>
-					<view class="info-item">
-						<text class="label">存放位置</text>
-						<text class="value">{{ businessDetail.location || '未知' }}</text>
-					</view>
-				</view>
-
-				<!-- 外卖代取 -->
-				<view v-else-if="orderDetail.orderType === 'T'">
-					<view class="info-item">
-						<text class="label">取餐点</text>
-						<text class="value">{{ businessDetail.location || '未知' }}</text>
-					</view>
-					<view class="info-item" v-if="showSensitiveInfo">
-						<text class="label">取件码</text>
-						<text class="value">{{ businessDetail.code || '无' }}</text>
-					</view>
-				</view>
-
-				<!-- 物品搬运 -->
-				<view v-else-if="orderDetail.orderType === 'C'">
-					<view class="info-item">
-						<text class="label">物品描述</text>
-						<text class="value">{{ businessDetail.description || '无' }}</text>
-					</view>
-					<view class="info-item">
-						<text class="label">预估重量</text>
-						<text class="value">{{ businessDetail.weight || '未知' }}</text>
-					</view>
-					<view class="info-item">
-						<text class="label">物品数量</text>
-						<text class="value">{{ businessDetail.count || 1 }}</text>
-					</view>
-				</view>
-
-				<!-- 商品代购 -->
-				<view v-else-if="orderDetail.orderType === 'P'">
-					<view class="info-item">
-						<text class="label">商品描述</text>
-						<text class="value">{{ businessDetail.description || '无' }}</text>
-					</view>
-					<view class="info-item">
-						<text class="label">商品链接</text>
-						<text class="value link">{{ businessDetail.productLink || '无' }}</text>
-					</view>
-					<view class="info-item">
-						<text class="label">购买数量</text>
-						<text class="value">{{ businessDetail.count || 1 }}</text>
-					</view>
-					<view class="info-item" v-if="businessDetail.price">
-						<text class="label">商品价格</text>
-						<text class="value">¥{{ businessDetail.price }}</text>
-					</view>
-				</view>
-
-				<!-- 通用备注信息 -->
-				<view class="info-item" v-if="businessDetail.remark">
-					<text class="label">备注信息</text>
-					<text class="value">{{ businessDetail.remark }}</text>
+			<!-- 动态表单业务详情信息 -->
+			<view class="info-card" v-if="formList.length > 0 && Object.keys(businessDetail).length > 0">
+				<view class="card-title">{{ orderDetail.service_name || '服务' }}详情</view>
+				<!-- 动态渲染表单数据 -->
+				<view class="info-item" v-for="(item, index) in formList" :key="index">
+					<text class="label">{{ item.label }}</text>
+					<!-- 处理私密字段：只有满足权限才显示，否则显示*** -->
+					<text class="value" v-if="!item.private || showSensitiveInfo">
+						{{ businessDetail[item.name] || '无' }}
+					</text>
+					<text class="value" v-else>***</text>
 				</view>
 			</view>
 
@@ -116,6 +60,10 @@
 				<view class="info-item">
 					<text class="label">收件人</text>
 					<text class="value">{{ addressInfo.sjr }}</text>
+				</view>
+				<view class="info-item">
+					<text class="label">联系电话</text>
+					<text class="value">{{ addressInfo.phone }}</text>
 				</view>
 				<view class="info-item">
 					<text class="label">配送地址</text>
@@ -154,49 +102,40 @@
 
 	const userInfo = useUserStore().info
 
+	// 订单详情（适配后端新增的status_name、jdr、accept_time等字段）
 	const orderDetail = ref({
 		oid: '',
 		xdr: '',
-		createTime: '',
-		expectTime: null,
-		orderType: '',
+		create_time: '',
+		expect_time: null,
+		complete_time: null,
+		accept_time: null, // 接单时间
+		service_id: '',
 		aid: '',
 		detail: '',
 		amount: 0,
-		jdr: null,
-		acceptTime: null,
-		completeTime: null,
-		status: 'D'
+		status: 'D', // 状态标识（如D/J/S/C）
+		status_name: '', // 后端返回的状态名称（如待接单、进行中）
+		jdr: '', // 接单者ID
+		form: '', // 表单结构JSON字符串
+		service_name: '', // 服务名称（如快递代取、外卖代取）
+		description: ''
 	});
-	const businessDetail = ref({});
+	const businessDetail = ref({}); // 解析后的表单数据
+	const formList = ref([]); // 解析后的表单结构数组
 	const addressInfo = ref(null);
-	const conversationId = ref(null)
+	const conversationId = ref(null) // 接收后端返回的会话ID
 
-	// 计算属性
+	// 计算属性：是否显示操作按钮
 	const showActionButtons = computed(() => {
 		return ['D', 'J'].includes(orderDetail.value.status);
 	});
 
-	// 是否显示敏感信息（取件码）
+	// 是否显示敏感信息（私密字段，如取餐码、取件码）
 	const showSensitiveInfo = computed(() => {
-		return ['J', 'S'].includes(orderDetail.value.status);
+		// 状态为进行中、已完成时显示，或当前用户是下单人（可根据业务需求调整）
+		return ['J', 'S'].includes(orderDetail.value.status) || orderDetail.value.xdr === userInfo.uid;
 	});
-
-	// 订单类型映射
-	const orderTypeMap = {
-		'E': '快递代取',
-		'T': '外卖代取',
-		'C': '物品搬运',
-		'P': '商品代购'
-	};
-
-	// 状态映射
-	const statusMap = {
-		'D': '待接单',
-		'J': '进行中',
-		'S': '已完成',
-		'C': '已取消'
-	};
 
 	onLoad((options) => {
 		const { oid } = options;
@@ -212,7 +151,7 @@
 	});
 
 	// 加载订单详情
-	const loadOrderDetail = async (oid : string) => {
+	const loadOrderDetail = async (oid: string) => {
 		loading.value = true;
 		try {
 			const res = await request({
@@ -221,16 +160,16 @@
 			});
 
 			if (res.errCode === 0) {
-				// 设置订单详情
+				// 设置订单详情（包含后端新增的status_name、jdr等字段）
 				orderDetail.value = res.data.order;
 
 				// 设置地址信息
 				addressInfo.value = res.data.address;
 
-				// 会话消息
+				// 接收后端返回的会话ID
 				conversationId.value = res.data.conversationId;
 
-				// 解析业务详情
+				// 1. 解析业务详情数据（detail字段）
 				if (orderDetail.value.detail) {
 					try {
 						businessDetail.value = typeof orderDetail.value.detail === 'string'
@@ -238,6 +177,17 @@
 							: orderDetail.value.detail;
 					} catch (e) {
 						businessDetail.value = {};
+					}
+				}
+
+				// 2. 解析表单结构（form字段）
+				if (orderDetail.value.form) {
+					try {
+						formList.value = typeof orderDetail.value.form === 'string'
+							? JSON.parse(orderDetail.value.form)
+							: orderDetail.value.form;
+					} catch (e) {
+						formList.value = [];
 					}
 				}
 			} else {
@@ -256,18 +206,8 @@
 		}
 	};
 
-	// 获取订单类型文本
-	const getOrderTypeText = (orderType : string) => {
-		return orderTypeMap[orderType] || '未知类型';
-	};
-
-	// 获取状态文本
-	const getStatusText = (status : string) => {
-		return statusMap[status] || '未知状态';
-	};
-
 	// 格式化时间
-	const formatTime = (time : any) => {
+	const formatTime = (time: any) => {
 		if (!time) return '-';
 		const date = new Date(time);
 		return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
@@ -295,12 +235,13 @@
 					title: '接单成功',
 					icon: 'success'
 				});
-				// 更新订单状态
+				// 更新订单状态（同步后端的状态标识和名称，可根据接口返回调整）
 				orderDetail.value.status = 'J';
-				orderDetail.value.jdr = userInfo.nickname;
-				orderDetail.value.acceptTime = new Date().toISOString();
+				orderDetail.value.status_name = '进行中';
+				orderDetail.value.jdr = uid; // 赋值当前用户为接单者
+				orderDetail.value.accept_time = new Date().toISOString();
 
-				// 接单成功后创建私聊会话
+				// 接单成功后创建私聊会话（如果后端不需要前端创建，可注释此逻辑）
 				request({
 					url: '/conversation/create',
 					method: 'POST',
@@ -360,8 +301,10 @@
 									title: '订单已完成',
 									icon: 'success'
 								});
+								// 更新订单状态（同步后端的状态标识和名称）
 								orderDetail.value.status = 'S';
-								orderDetail.value.completeTime = new Date().toISOString();
+								orderDetail.value.status_name = '已完成';
+								orderDetail.value.complete_time = new Date().toISOString();
 							} else {
 								throw new Error(result.msg || '操作失败');
 							}
@@ -411,7 +354,9 @@
 									title: '订单已取消',
 									icon: 'success'
 								});
+								// 更新订单状态（同步后端的状态标识和名称）
 								orderDetail.value.status = 'C';
+								orderDetail.value.status_name = '已取消';
 							} else {
 								throw new Error(result.msg || '取消失败');
 							}
@@ -438,10 +383,17 @@
 
 	// 私聊
 	const goToPrivateChat = (cid) => {
+		if (!cid) {
+			uni.showToast({
+				title: '会话ID不存在',
+				icon: 'none'
+			});
+			return;
+		}
 		uni.navigateTo({
-			url: "/pages/messages/private-chat/private-chat?cid=" + cid
-		})
-	}
+			url: `/pages/messages/private-chat/private-chat?cid=${cid}`
+		});
+	};
 </script>
 
 <style scoped>

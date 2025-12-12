@@ -203,15 +203,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public R detailOrder(String oid) {
+    public R detail(String oid) {
         JSONObject result = new JSONObject();
 
-        Order order = orderMapper.selectById(oid);
+        JSONObject order = orderMapper.detail(oid);
         result.put("order", order);
         // 地址
-        result.put("address", addressMapper.selectById(order.getAid()));
+        result.put("address", addressMapper.selectById(order.getString("aid")));
         // 如果已接单，就查询会话信息
-        if (order.getStatus() != 'D' && order.getStatus() != 'C') {
+        if (order.getObject("status", Character.class) == 'J') {
             Conversation conversation = conversationMapper.selectOne(new LambdaQueryWrapper<Conversation>().eq(Conversation::getOid, oid));
             result.put("conversationId", conversation.getCid());
         }
