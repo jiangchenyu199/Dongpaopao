@@ -12,3 +12,15 @@ updates:
       backend:
         patterns:
           - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/admin"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "user"
+    groups:
+      admin:
+        patterns:
+          - "*"
