@@ -21,8 +21,20 @@
 
             <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
                 <el-table-column prop="orderNo" label="订单号" width="200px" />
-                <el-table-column prop="buyer" label="下单人" />
-                <el-table-column prop="receiver" label="接单人" />
+                <el-table-column prop="xdr" label="下单人">
+                    <template #default="{ row }">
+                        <el-link type="primary" @click="handleUserClick(row.xdrId, row.xdr)">
+                            {{ row.xdr }}
+                        </el-link>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="jdr" label="接单人">
+                    <template #default="{ row }">
+                        <el-link type="primary" @click="handleUserClick(row.jdrId, row.jdr)">
+                            {{ row.jdr }}
+                        </el-link>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="typeName" label="订单类型" width="100px" />
                 <el-table-column prop="amount" label="订单金额" align="right" width="100px">
                     <template #default="{ row }">
@@ -91,8 +103,8 @@
         <el-dialog v-model="detailDialogVisible" title="订单详情" width="600px">
             <el-descriptions :column="1" border>
                 <el-descriptions-item label="订单号">{{ currentOrder.orderNo }}</el-descriptions-item>
-                <el-descriptions-item label="下单人">{{ currentOrder.buyer }}</el-descriptions-item>
-                <el-descriptions-item label="接单人">{{ currentOrder.receiver }}</el-descriptions-item>
+                <el-descriptions-item label="下单人">{{ currentOrder.xdr }}</el-descriptions-item>
+                <el-descriptions-item label="接单人">{{ currentOrder.jdr }}</el-descriptions-item>
                 <el-descriptions-item label="订单金额">
                     <span style="color: #f56c6c; font-weight: bold; font-size: 18px">¥{{ currentOrder.amount.toFixed(2)
                         }}</span>
@@ -119,6 +131,34 @@
                 <el-button @click="detailDialogVisible = false">关闭</el-button>
             </template>
         </el-dialog>
+
+        <el-dialog v-model="userDialogVisible" :title="`用户信息`" width="500px">
+            <el-form :model="currentUser" label-width="80px">
+                <el-form-item label="用户ID">
+                    <el-input v-model="currentUser.uid" disabled />
+                </el-form-item>
+                <el-form-item label="昵称">
+                    <el-input v-model="currentUser.nickname" />
+                </el-form-item>
+                <el-form-item label="性别">
+                    <el-radio-group v-model="currentUser.sex">
+                        <el-radio :label="1">男</el-radio>
+                        <el-radio :label="0">女</el-radio>
+                        <el-radio :label="-1">未知</el-radio>
+                    </el-radio-group>
+                </el-form-item>
+                <el-form-item label="手机号">
+                    <el-input v-model="currentUser.phone" />
+                </el-form-item>
+                <el-form-item label="注册时间">
+                    <el-input v-model="currentUser.ctime" disabled />
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="userDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="handleUpdateUser">保存修改</el-button>
+            </template>
+        </el-dialog>
     </div>
 </template>
 
@@ -127,6 +167,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getOrderList, getOrderDetail } from '@/api/order'
+import { getUserInfoById, updateAppUserInfo } from '@/api/user'
 
 
 const loading = ref(false)
@@ -137,6 +178,8 @@ const total = ref(0)
 const detailDialogVisible = ref(false)
 const currentOrder = ref({})
 const tableData = ref([])
+const userDialogVisible = ref(false)
+const currentUser = ref({})
 
 const allOrders = ref([])
 
@@ -217,6 +260,34 @@ const handleViewDetail = async (row) => {
     } catch (error) {
         console.error('Failed to load order detail:', error)
         ElMessage.error('加载订单详情失败')
+    }
+}
+
+const handleUserClick = async (userId, username) => {
+    try {
+        const response = await getUserInfoById({ uid: userId })
+        if (response && response.data) {
+            currentUser.value = response.data
+            userDialogVisible.value = true
+        }
+    } catch (error) {
+        console.error('Failed to load user info:', error)
+        ElMessage.error('加载用户信息失败')
+    }
+}
+
+const handleUpdateUser = async () => {
+    try {
+        const response = await updateAppUserInfo(currentUser.value)
+        if (response && response.errCode === 0) {
+            ElMessage.success('用户信息更新成功')
+            userDialogVisible.value = false
+        } else {
+            ElMessage.error('用户信息更新失败')
+        }
+    } catch (error) {
+        console.error('Failed to update user:', error)
+        ElMessage.error('更新用户信息失败')
     }
 }
 

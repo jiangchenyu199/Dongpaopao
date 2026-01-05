@@ -38,8 +38,10 @@
     <select id="getAdminOrderList" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT
             o.oid as orderNo,
-            xdr_user.nickname as buyer,
-            jdr_user.nickname as receiver,
+            xdr_user.nickname as xdr,
+            xdr_user.uid as xdrId,
+            jdr_user.nickname as jdr,
+            jdr_user.uid as jdrId,
             order_type.type_name as typeName,
         order_status.description as status,
         order_status.color,
@@ -74,8 +76,10 @@
     <select id="getAdminOrderDetail" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT
             o.oid as orderNo,
-            xdr_user.nickname as buyer,
-            jdr_user.nickname as receiver,
+            xdr_user.nickname as xdr,
+            xdr_user.uid as xdrId,
+            jdr_user.nickname as jdr,
+            jdr_user.uid as jdrId,
             o.amount,
             o.rating,
             order_status.description as status,

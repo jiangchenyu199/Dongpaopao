@@ -22,7 +22,15 @@ export function getUserInfo() {
   })
 }
 
-export function updateUserInfo(data) {
+export function getUserInfoById(params) {
+  return request({
+    url: '/user/info',
+    method: 'get',
+    params
+  })
+}
+
+export function updateAdminUserInfo(data) {
   return request({
     url: '/admin/user/info',
     method: 'put',
@@ -57,6 +65,14 @@ export function addUser(data) {
 export function updateUser(data) {
   return request({
     url: '/admin/user/update',
+    method: 'put',
+    data
+  })
+}
+
+export function updateAppUserInfo(data) {
+  return request({
+    url: '/user/update',
     method: 'put',
     data
   })
