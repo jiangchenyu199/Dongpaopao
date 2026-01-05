@@ -59,7 +59,7 @@
     </appender>
     
     <!-- 设置日志级别 -->
-    <logger name="com.github.solanej" level="DEBUG" additivity="false">
+    <logger name="com.cy" level="DEBUG" additivity="false">
         <appender-ref ref="FILE"/>
     </logger>
     
@@ -86,13 +86,13 @@
     
     <!-- 针对开发环境的特定配置 -->
     <springProfile name="dev">
-        <logger name="com.github.solanej" level="DEBUG"/>
+        <logger name="com.cy" level="DEBUG"/>
         <logger name="org.springframework.web" level="DEBUG"/>
     </springProfile>
     
     <!-- 针对生产环境的特定配置 -->
     <springProfile name="prod">
-        <logger name="com.github.solanej" level="INFO"/>
+        <logger name="com.cy" level="INFO"/>
         <logger name="org.springframework.web" level="WARN"/>
     </springProfile>
 </configuration>
