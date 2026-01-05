@@ -7,14 +7,16 @@
                         <div class="stat-info">
                             <div class="stat-label">总用户数</div>
                             <div class="stat-number">
-                                <n-number-animation :from="0" :to="1234" :duration="2000" :show-separator="true" />
+                                <n-number-animation :from="0" :to="statistics?.totalUsers || 0" :duration="2000"
+                                    :show-separator="true" />
                                 <span class="stat-suffix">人</span>
                             </div>
-                            <div class="stat-trend up">
+                            <div class="stat-trend" :class="getUserTrend()">
                                 <el-icon>
-                                    <Top />
+                                    <Top v-if="getUserTrend() === 'up'" />
+                                    <Bottom v-else />
                                 </el-icon>
-                                <span>12.5%</span>
+                                <span>{{ getUserGrowth() }}%</span>
                                 <span class="trend-text">较上月</span>
                             </div>
                         </div>
@@ -27,14 +29,16 @@
                         <div class="stat-info">
                             <div class="stat-label">总订单数</div>
                             <div class="stat-number">
-                                <n-number-animation :from="0" :to="5678" :duration="2000" :show-separator="true" />
+                                <n-number-animation :from="0" :to="statistics?.totalOrders || 0" :duration="2000"
+                                    :show-separator="true" />
                                 <span class="stat-suffix">单</span>
                             </div>
-                            <div class="stat-trend up">
+                            <div class="stat-trend" :class="getOrderTrend()">
                                 <el-icon>
-                                    <Top />
+                                    <Top v-if="getOrderTrend() === 'up'" />
+                                    <Bottom v-else />
                                 </el-icon>
-                                <span>8.3%</span>
+                                <span>{{ getOrderGrowth() }}%</span>
                                 <span class="trend-text">较上月</span>
                             </div>
                         </div>
@@ -45,17 +49,14 @@
                 <el-card class="stat-card">
                     <div class="stat-content">
                         <div class="stat-info">
-                            <div class="stat-label">商品总数</div>
+                            <div class="stat-label">上月新增用户</div>
                             <div class="stat-number">
-                                <n-number-animation :from="0" :to="892" :duration="2000" :show-separator="true" />
-                                <span class="stat-suffix">件</span>
+                                <n-number-animation :from="0" :to="statistics?.lastMonthUsers || 0" :duration="2000"
+                                    :show-separator="true" />
+                                <span class="stat-suffix">人</span>
                             </div>
-                            <div class="stat-trend down">
-                                <el-icon>
-                                    <Bottom />
-                                </el-icon>
-                                <span>2.1%</span>
-                                <span class="trend-text">较上月</span>
+                            <div class="stat-trend">
+                                <span class="trend-text">{{ statistics?.month || '-' }}</span>
                             </div>
                         </div>
                     </div>
@@ -65,16 +66,18 @@
                 <el-card class="stat-card">
                     <div class="stat-content">
                         <div class="stat-info">
-                            <div class="stat-label">总销售额</div>
+                            <div class="stat-label">总交易金额</div>
                             <div class="stat-number">
                                 <span class="stat-prefix">¥</span>
-                                <n-number-animation :from="0" :to="234567" :duration="2000" :show-separator="true" />
+                                <n-number-animation :from="0" :to="statistics?.totalAmount || 0" :duration="2000"
+                                    :show-separator="true" />
                             </div>
-                            <div class="stat-trend up">
+                            <div class="stat-trend" :class="getAmountTrend()">
                                 <el-icon>
-                                    <Top />
+                                    <Top v-if="getAmountTrend() === 'up'" />
+                                    <Bottom v-else />
                                 </el-icon>
-                                <span>15.7%</span>
+                                <span>{{ getAmountGrowth() }}%</span>
                                 <span class="trend-text">较上月</span>
                             </div>
                         </div>
@@ -88,7 +91,7 @@
                 <el-card class="chart-card">
                     <template #header>
                         <div class="card-header">
-                            <span>销售趋势</span>
+                            <span>近七天交易额趋势</span>
                         </div>
                     </template>
                     <v-chart class="chart" :option="lineChartOption" autoresize />
@@ -98,33 +101,10 @@
                 <el-card class="chart-card">
                     <template #header>
                         <div class="card-header">
-                            <span>商品分类占比</span>
+                            <span>订单类型分布</span>
                         </div>
                     </template>
                     <v-chart class="chart" :option="pieChartOption" autoresize />
-                </el-card>
-            </el-col>
-        </el-row>
-
-        <el-row :gutter="20" class="charts-row">
-            <el-col :span="12">
-                <el-card class="chart-card">
-                    <template #header>
-                        <div class="card-header">
-                            <span>月度订单统计</span>
-                        </div>
-                    </template>
-                    <v-chart class="chart" :option="barChartOption" autoresize />
-                </el-card>
-            </el-col>
-            <el-col :span="12">
-                <el-card class="chart-card">
-                    <template #header>
-                        <div class="card-header">
-                            <span>用户增长趋势</span>
-                        </div>
-                    </template>
-                    <v-chart class="chart" :option="areaChartOption" autoresize />
                 </el-card>
             </el-col>
         </el-row>
@@ -132,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import VChart from 'vue-echarts'
 import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
@@ -145,6 +125,7 @@ import {
 } from 'echarts/components'
 import { Top, Bottom } from '@element-plus/icons-vue'
 import { NNumberAnimation } from 'naive-ui'
+import { getLatestStatistics, getDashboardCharts } from '@/api/statistics'
 
 use([
     CanvasRenderer,
@@ -157,12 +138,86 @@ use([
     GridComponent
 ])
 
+const statistics = ref(null)
+
+const loadStatistics = async () => {
+    try {
+        const response = await getLatestStatistics()
+        if (response.data) {
+            statistics.value = response.data
+        }
+    } catch (error) {
+        console.error('Failed to load statistics:', error)
+    }
+}
+
+const loadDashboardCharts = async () => {
+    try {
+        const response = await getDashboardCharts()
+        if (response.data) {
+            const data = response.data
+
+            if (data.transactionTrend) {
+                lineChartOption.value.xAxis.data = data.transactionTrend.dates
+                lineChartOption.value.series[0].data = data.transactionTrend.amounts
+            }
+
+            if (data.orderTypes) {
+                pieChartOption.value.series[0].data = data.orderTypes.map(item => ({
+                    ...item,
+                    itemStyle: { color: item.bgColor || '#909399' }
+                }))
+            }
+        }
+    } catch (error) {
+        console.error('Failed to load dashboard charts:', error)
+    }
+}
+
+onMounted(() => {
+    loadStatistics()
+    loadDashboardCharts()
+})
+
+const getUserTrend = () => {
+    if (!statistics.value || statistics.value.lastMonthUsers === 0) return 'up'
+    return 'up'
+}
+
+const getUserGrowth = () => {
+    if (!statistics.value || statistics.value.lastMonthUsers === 0) return '0'
+    const growth = ((statistics.value.lastMonthUsers / (statistics.value.totalUsers - statistics.value.lastMonthUsers)) * 100).toFixed(1)
+    return growth
+}
+
+const getOrderTrend = () => {
+    if (!statistics.value || statistics.value.lastMonthOrders === 0) return 'up'
+    return 'up'
+}
+
+const getOrderGrowth = () => {
+    if (!statistics.value || statistics.value.lastMonthOrders === 0) return '0'
+    const growth = ((statistics.value.lastMonthOrders / (statistics.value.totalOrders - statistics.value.lastMonthOrders)) * 100).toFixed(1)
+    return growth
+}
+
+const getAmountTrend = () => {
+    if (!statistics.value || statistics.value.lastMonthAmount === 0) return 'up'
+    return 'up'
+}
+
+const getAmountGrowth = () => {
+    if (!statistics.value || statistics.value.lastMonthAmount === 0) return '0'
+    const growth = ((statistics.value.lastMonthAmount / (statistics.value.totalAmount - statistics.value.lastMonthAmount)) * 100).toFixed(1)
+    return growth
+}
+
 const lineChartOption = ref({
     tooltip: {
         trigger: 'axis'
     },
     legend: {
-        data: ['销售额', '订单数'],
+        data: ['交易额'],
         top: 0
     },
     grid: {
@@ -175,115 +230,75 @@ const lineChartOption = ref({
     xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月']
+        data: []
     },
     yAxis: {
-        type: 'value'
+        type: 'value',
+        name: '金额（元）'
     },
     series: [
         {
-            name: '销售额',
+            name: '交易额',
             type: 'line',
-            data: [200, 300, 150, 250, 400, 200, 350],
-            smooth: true
-        },
-        {
-            name: '订单数',
-            type: 'line',
-            data: [220, 182, 191, 234, 290, 330, 310],
-            smooth: true
+            data: [],
+            smooth: true,
+            areaStyle: {
+                color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                        { offset: 0, color: 'rgba(64, 158, 255, 0.3)' },
+                        { offset: 1, color: 'rgba(64, 158, 255, 0.05)' }
+                    ]
+                }
+            },
+            itemStyle: {
+                color: '#409eff'
+            }
         }
     ]
 })
 
 const pieChartOption = ref({
     tooltip: {
-        trigger: 'item'
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
     },
     legend: {
         orient: 'vertical',
-        left: 'left'
+        left: 'left',
+        top: 'middle'
     },
     series: [
         {
-            name: '商品分类',
+            name: '订单类型',
             type: 'pie',
-            radius: '50%',
-            data: [
-                { value: 1048, name: '电子产品' },
-                { value: 735, name: '服装' },
-                { value: 580, name: '食品' },
-                { value: 484, name: '家居' },
-                { value: 300, name: '其他' }
-            ],
-            emphasis: {
-                itemStyle: {
-                    shadowBlur: 10,
-                    shadowOffsetX: 0,
-                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                }
-            }
-        }
-    ]
-})
-
-const barChartOption = ref({
-    tooltip: {
-        trigger: 'axis',
-        axisPointer: {
-            type: 'shadow'
-        }
-    },
-    grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-    },
-    xAxis: {
-        type: 'category',
-        data: ['1月', '2月', '3月', '4月', '5月', '6月']
-    },
-    yAxis: {
-        type: 'value'
-    },
-    series: [
-        {
-            name: '订单数',
-            type: 'bar',
-            data: [320, 332, 301, 334, 390, 330]
-        }
-    ]
-})
-
-const areaChartOption = ref({
-    tooltip: {
-        trigger: 'axis'
-    },
-    grid: {
-        left: '3%',
-        right: '4%',
-        bottom: '3%',
-        containLabel: true
-    },
-    xAxis: {
-        type: 'category',
-        boundaryGap: false,
-        data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月']
-    },
-    yAxis: {
-        type: 'value'
-    },
-    series: [
-        {
-            name: '新增用户',
-            type: 'line',
-            stack: 'Total',
-            areaStyle: {},
-            emphasis: {
-                focus: 'series'
+            radius: ['40%', '70%'],
+            center: ['60%', '50%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 2
             },
-            data: [120, 132, 101, 134, 90, 230, 210]
+            label: {
+                show: false,
+                position: 'center'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: 20,
+                    fontWeight: 'bold'
+                }
+            },
+            labelLine: {
+                show: false
+            },
+            data: []
         }
     ]
 })

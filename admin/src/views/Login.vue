@@ -40,8 +40,13 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
+import { ElMessage, ElNotification } from 'element-plus'
+import { login } from '@/api/user'
+import { useUserStore } from '@/stores/user'
+import dayjs from 'dayjs'
 
 const router = useRouter()
+const userStore = useUserStore()
 const formRef = ref()
 const loading = ref(false)
 const form = reactive({
@@ -54,19 +59,47 @@ const rules = {
         { required: true, message: '请输入用户名', trigger: 'blur' }
     ],
     password: [
-        { required: true, message: '请输入密码', trigger: 'blur' }
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
     ]
 }
 
-const handleLogin = () => {
-    formRef.value.validate((valid) => {
+const handleLogin = async () => {
+    formRef.value.validate(async (valid) => {
         if (valid) {
             loading.value = true
-            console.log('登录信息:', form)
-            setTimeout(() => {
+            try {
+                const response = await login({
+                    username: form.username,
+                    password: form.password
+                })
+                
+                if (response.errCode === 0 || response.success) {
+                    const { token, userInfo } = response.data
+                    
+                    userStore.setToken(token)
+                    userStore.setUserInfo(userInfo)
+                    
+                    ElMessage.success('登录成功')
+                    
+                    if (userInfo.lastLoginTime) {
+                        const lastLoginTime = dayjs(userInfo.lastLoginTime).format('YYYY-MM-DD HH:mm:ss')
+                        ElNotification({
+                            title: '欢迎回来',
+                            message: `上次登录时间：${lastLoginTime}`,
+                            type: 'success',
+                            duration: 5000,
+                            position: 'top-right'
+                        })
+                    }
+                    
+                    router.push('/home/dashboard')
+                }
+            } catch (error) {
+                console.error('登录失败:', error)
+            } finally {
                 loading.value = false
-                router.push('/home/dashboard')
-            }, 1000)
+            }
         }
     })
 }

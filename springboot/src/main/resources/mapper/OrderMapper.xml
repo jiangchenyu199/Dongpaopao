@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.github.solanej.mapper.OrderMapper">
+<mapper namespace="com.github.solanej.mapper.app.OrderMapper">
     <select id="getHallOrders" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT o.oid,
         o.create_time as createTime,
@@ -25,5 +25,68 @@
         FROM `order`
         LEFT JOIN service ON `order`.service_id = service.service_id
         WHERE `order`.status = 'J' ORDER BY `order`.create_time DESC;
+    </select>
+
+    <select id="getAdminOrderList" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT
+            o.oid as orderNo,
+            xdr_user.nickname as buyer,
+            jdr_user.nickname as receiver,
+            o.amount,
+            CASE o.status
+                WHEN 'D' THEN '待支付'
+                WHEN 'J' THEN '待发货'
+                WHEN 'S' THEN '已完成'
+                WHEN 'C' THEN '已取消'
+                ELSE '未知'
+            END as status,
+            o.create_time as createTime
+        FROM `order` o
+        LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
+        LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (o.oid LIKE CONCAT('%', #{keyword}, '%')
+                OR xdr_user.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR jdr_user.nickname LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null and status != ''">
+                AND o.status = 
+                <choose>
+                    <when test="status == '待支付'">'D'</when>
+                    <when test="status == '待发货'">'J'</when>
+                    <when test="status == '已完成'">'S'</when>
+                    <when test="status == '已取消'">'C'</when>
+                    <otherwise>'D'</otherwise>
+                </choose>
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="getAdminOrderDetail" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT
+            o.oid as orderNo,
+            xdr_user.nickname as buyer,
+            jdr_user.nickname as receiver,
+            o.amount,
+            CASE o.status
+                WHEN 'D' THEN '待支付'
+                WHEN 'J' THEN '待发货'
+                WHEN 'S' THEN '已完成'
+                WHEN 'C' THEN '已取消'
+                ELSE '未知'
+            END as status,
+            jdr_user.phone as phone,
+            addr.detail as address,
+            o.create_time as createTime,
+            o.accept_time as payTime,
+            o.expect_time as shipTime,
+            o.complete_time as finishTime
+        FROM `order` o
+        LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
+        LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
+        LEFT JOIN address addr ON o.aid = addr.aid
+        WHERE o.oid = #{oid}
     </select>
 </mapper>

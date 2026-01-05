@@ -1,28 +1,19 @@
 <template>
     <el-container class="home-container">
-        <el-header class="home-header">
-            <div class="header-left">
-                
-            </div>
-            <div class="header-right">
-                <el-dropdown>
-                    <div class="user-info">
-                        <el-avatar :size="40"
-                            src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
-                        <span class="username">管理员</span>
-                        <el-icon class="el-icon--right">
-                            <ArrowDown />
-                        </el-icon>
-                    </div>
-                    <template #dropdown>
-                        <el-dropdown-menu>
-                            <el-dropdown-item>个人中心</el-dropdown-item>
-                            <el-dropdown-item>修改密码</el-dropdown-item>
-                            <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </template>
-                </el-dropdown>
-            </div>
+        <el-header class="flex items-center justify-end bg-white border-b border-gray-200 px-5">
+            <el-dropdown>
+                <div class="flex items-center cursor-pointer px-2.5 py-2.5 transition-all hover:bg-gray-50 rounded">
+                    <span class="ml-2.5 text-sm text-gray-800">{{ userStore.userInfo?.username || '管理员' }}</span>
+                    <el-icon class="el-icon--right">
+                        <ArrowDown />
+                    </el-icon>
+                </div>
+                <template #dropdown>
+                    <el-dropdown-menu>
+                        <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+                    </el-dropdown-menu>
+                </template>
+            </el-dropdown>
         </el-header>
 
         <el-container>
@@ -46,6 +37,12 @@
                         </el-icon>
                         <span>订单管理</span>
                     </el-menu-item>
+                    <el-menu-item index="profile">
+                        <el-icon>
+                            <User />
+                        </el-icon>
+                        <span>个人设置</span>
+                    </el-menu-item>
                     <el-menu-item index="settings">
                         <el-icon>
                             <Setting />
@@ -66,9 +63,11 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowDown, DataAnalysis, User, Document, Goods, Setting } from '@element-plus/icons-vue'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 
 const activeMenu = computed(() => {
     const path = route.path
@@ -83,7 +82,7 @@ const handleSelect = (index) => {
 }
 
 const handleLogout = () => {
-    console.log('退出登录')
+    userStore.logout()
     router.push('/login')
 }
 </script>

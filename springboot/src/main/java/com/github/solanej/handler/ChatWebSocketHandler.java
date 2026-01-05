@@ -1,7 +1,7 @@
 package com.github.solanej.handler;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.github.solanej.service.MessageService;
+import com.github.solanej.service.app.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

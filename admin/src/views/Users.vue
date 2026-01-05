@@ -7,84 +7,65 @@
                 </div>
             </template>
 
-            <div class="search-bar">
-                <el-button type="primary" @click="handleAdd" class="add-button">
-                    <el-icon><Plus /></el-icon>
-                    新增用户
-                </el-button>
-                <el-button
-                    type="danger"
-                    @click="handleBatchDelete"
-                    :disabled="selectedRows.length === 0"
-                >
-                    <el-icon><Delete /></el-icon>
-                    批量删除
-                </el-button>
-                <el-button
-                    type="warning"
-                    @click="handleBatchToggleStatus"
-                    :disabled="selectedRows.length === 0"
-                >
-                    <el-icon><Refresh /></el-icon>
-                    批量{{ selectedRows[0]?.status === '启用' ? '停用' : '启用' }}
-                </el-button>
-                <el-input
-                    v-model="searchKeyword"
-                    placeholder="搜索用户名、手机号、邮箱"
-                    clearable
-                    style="width: 300px"
-                    @clear="handleSearch"
-                >
-                    <template #prefix>
-                        <el-icon><Search /></el-icon>
-                    </template>
-                </el-input>
-                <el-button type="primary" @click="handleSearch">搜索</el-button>
+            <div class="mb-5 flex justify-between items-center">
+                <div class="flex gap-2.5">
+                    <el-button type="primary" @click="handleAdd" class="add-button">
+                        <el-icon>
+                            <Plus />
+                        </el-icon>
+                        新增用户
+                    </el-button>
+                    <el-button type="danger" @click="handleBatchDelete" :disabled="selectedRows.length === 0">
+                        <el-icon>
+                            <Delete />
+                        </el-icon>
+                        批量删除
+                    </el-button>
+                    <!-- 暂时注释掉用户状态功能
+                    <el-button type="warning" @click="handleBatchToggleStatus" :disabled="selectedRows.length === 0">
+                        <el-icon>
+                            <Refresh />
+                        </el-icon>
+                        批量{{ selectedRows[0]?.status === true ? '停用' : '启用' }}
+                    </el-button>
+                    -->
+                </div>
+                <div class="flex gap-2.5">
+                    <el-input v-model="searchKeyword" placeholder="搜索用户名、手机号、邮箱" clearable style="width: 300px"
+                        @clear="handleSearch">
+                        <template #prefix>
+                            <el-icon>
+                                <Search />
+                            </el-icon>
+                        </template>
+                    </el-input>
+                    <el-button type="primary" @click="handleSearch">搜索</el-button>
+                </div>
             </div>
 
-            <el-table
-                :data="tableData"
-                border
-                stripe
-                style="width: 100%"
-                v-loading="loading"
-                @selection-change="handleSelectionChange"
-            >
+            <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading"
+                @selection-change="handleSelectionChange">
                 <el-table-column type="selection" width="55" />
-                <el-table-column type="index" label="序号" width="60" align="center" />
                 <el-table-column prop="username" label="用户名" width="120" />
                 <el-table-column prop="nickname" label="昵称" width="120" />
-                <el-table-column prop="phone" label="手机号" width="130" />
-                <el-table-column prop="email" label="邮箱" width="180" />
-                <el-table-column prop="role" label="角色" width="100">
-                    <template #default="{ row }">
-                        <el-tag :type="row.role === '管理员' ? 'danger' : 'primary'">
-                            {{ row.role }}
-                        </el-tag>
-                    </template>
-                </el-table-column>
+                <el-table-column prop="phone" label="手机号" />
+                <el-table-column prop="email" label="邮箱" />
+                <!-- 暂时注释掉用户状态列
                 <el-table-column prop="status" label="状态" width="100">
                     <template #default="{ row }">
-                        <el-tag :type="row.status === '启用' ? 'success' : 'info'">
-                            {{ row.status }}
+                        <el-tag :type="row.status === true ? 'success' : 'info'">
+                            {{ row.status === true ? '启用' : '停用' }}
                         </el-tag>
                     </template>
                 </el-table-column>
+                -->
                 <el-table-column prop="createTime" label="创建时间" width="180" />
                 <el-table-column label="操作" width="150" align="center" fixed="right">
                     <template #default="{ row }">
-                        <el-button
-                            type="primary"
-                            size="small"
-                            @click="handleEdit(row)"
-                        >
+                        <el-button type="primary" size="small" @click="handleEdit(row)">
                             修改
                         </el-button>
-                        <el-button
-                            type="danger"
-                            size="small"
-                            @click="handleDelete(row)"
-                        >
+                        <el-button type="danger" size="small" @click="handleDelete(row)">
                             删除
                         </el-button>
                     </template>
@@ -92,29 +73,13 @@
             </el-table>
 
             <div class="pagination-container">
-                <el-pagination
-                    v-model:current-page="currentPage"
-                    v-model:page-size="pageSize"
-                    :page-sizes="[10, 20, 50, 100]"
-                    :total="total"
-                    layout="total, sizes, prev, pager, next, jumper"
-                    @size-change="handleSizeChange"
-                    @current-change="handleCurrentChange"
-                />
+                <el-pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total="total"
+                    layout="prev, pager, next" @size-change="handleSizeChange" @current-change="handleCurrentChange" />
             </div>
         </el-card>
 
-        <el-dialog
-            v-model="dialogVisible"
-            :title="dialogTitle"
-            width="500px"
-        >
-            <el-form
-                ref="formRef"
-                :model="form"
-                :rules="rules"
-                label-width="80px"
-            >
+        <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
+            <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
                 <el-form-item label="用户名" prop="username">
                     <el-input v-model="form.username" placeholder="请输入用户名" />
                 </el-form-item>
@@ -127,17 +92,8 @@
                 <el-form-item label="邮箱" prop="email">
                     <el-input v-model="form.email" placeholder="请输入邮箱" />
                 </el-form-item>
-                <el-form-item label="角色" prop="role">
-                    <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
-                        <el-option label="管理员" value="管理员" />
-                        <el-option label="普通用户" value="普通用户" />
-                    </el-select>
-                </el-form-item>
-                <el-form-item label="状态" prop="status">
-                    <el-select v-model="form.status" placeholder="请选择状态" style="width: 100%">
-                        <el-option label="启用" value="启用" />
-                        <el-option label="禁用" value="禁用" />
-                    </el-select>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
                 </el-form-item>
             </el-form>
             <template #footer>
@@ -149,9 +105,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Search, Delete, Refresh } from '@element-plus/icons-vue'
+import { getUserList, addUser, updateUser, deleteUser, batchDeleteUsers, batchToggleUserStatus } from '@/api/user'
 
 const loading = ref(false)
 const searchKeyword = ref('')
@@ -169,8 +126,7 @@ const form = reactive({
     nickname: '',
     phone: '',
     email: '',
-    role: '普通用户',
-    status: '启用'
+    password: ''
 })
 
 const rules = {
@@ -189,167 +145,53 @@ const rules = {
         { required: true, message: '请输入邮箱', trigger: 'blur' },
         { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
     ],
-    role: [
-        { required: true, message: '请选择角色', trigger: 'change' }
-    ],
-    status: [
-        { required: true, message: '请选择状态', trigger: 'change' }
+    password: [
+        { required: true, message: '请输入密码', trigger: 'blur' },
+        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' }
     ]
 }
 
-const allUsers = ref([
-    {
-        id: 1,
-        username: 'admin',
-        nickname: '超级管理员',
-        phone: '13800138000',
-        email: 'admin@example.com',
-        role: '管理员',
-        status: '启用',
-        createTime: '2024-01-01 10:00:00'
-    },
-    {
-        id: 2,
-        username: 'user001',
-        nickname: '张三',
-        phone: '13900139000',
-        email: 'zhangsan@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-02 14:30:00'
-    },
-    {
-        id: 3,
-        username: 'user002',
-        nickname: '李四',
-        phone: '13700137000',
-        email: 'lisi@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-03 09:15:00'
-    },
-    {
-        id: 4,
-        username: 'user003',
-        nickname: '王五',
-        phone: '13600136000',
-        email: 'wangwu@example.com',
-        role: '普通用户',
-        status: '禁用',
-        createTime: '2024-01-04 16:45:00'
-    },
-    {
-        id: 5,
-        username: 'user004',
-        nickname: '赵六',
-        phone: '13500135000',
-        email: 'zhaoliu@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-05 11:20:00'
-    },
-    {
-        id: 6,
-        username: 'user005',
-        nickname: '钱七',
-        phone: '13400134000',
-        email: 'qianqi@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-06 15:00:00'
-    },
-    {
-        id: 7,
-        username: 'user006',
-        nickname: '孙八',
-        phone: '13300133000',
-        email: 'sunba@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-07 13:30:00'
-    },
-    {
-        id: 8,
-        username: 'user007',
-        nickname: '周九',
-        phone: '13200132000',
-        email: 'zhoujiu@example.com',
-        role: '普通用户',
-        status: '禁用',
-        createTime: '2024-01-08 10:45:00'
-    },
-    {
-        id: 9,
-        username: 'user008',
-        nickname: '吴十',
-        phone: '13100131000',
-        email: 'wushi@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-09 14:20:00'
-    },
-    {
-        id: 10,
-        username: 'user009',
-        nickname: '郑十一',
-        phone: '13000130000',
-        email: 'zhengshiyi@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-10 09:00:00'
-    },
-    {
-        id: 11,
-        username: 'user010',
-        nickname: '王十二',
-        phone: '15800158000',
-        email: 'wangshier@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-11 16:30:00'
-    },
-    {
-        id: 12,
-        username: 'user011',
-        nickname: '冯十三',
-        phone: '15900159000',
-        email: 'fengshisan@example.com',
-        role: '普通用户',
-        status: '启用',
-        createTime: '2024-01-12 11:15:00'
+const tableData = ref([])
+
+const fetchUserList = async () => {
+    loading.value = true
+    try {
+        const response = await getUserList({
+            page: currentPage.value,
+            size: pageSize.value,
+            keyword: searchKeyword.value
+        })
+
+        if (response.errCode === 0) {
+            tableData.value = response.data.records
+            total.value = response.data.total
+        }
+    } catch (error) {
+        console.error('获取用户列表失败:', error)
+        ElMessage.error('获取用户列表失败')
+    } finally {
+        loading.value = false
     }
-])
+}
 
-const tableData = computed(() => {
-    let filteredUsers = allUsers.value
-
-    if (searchKeyword.value) {
-        const keyword = searchKeyword.value.toLowerCase()
-        filteredUsers = filteredUsers.filter(user =>
-            user.username.toLowerCase().includes(keyword) ||
-            user.phone.includes(keyword) ||
-            user.email.toLowerCase().includes(keyword)
-        )
-    }
-
-    total.value = filteredUsers.length
-
-    const start = (currentPage.value - 1) * pageSize.value
-    const end = start + pageSize.value
-    return filteredUsers.slice(start, end)
+onMounted(() => {
+    fetchUserList()
 })
 
 const handleSearch = () => {
     currentPage.value = 1
+    fetchUserList()
 }
 
 const handleSizeChange = (val) => {
     pageSize.value = val
     currentPage.value = 1
+    fetchUserList()
 }
 
 const handleCurrentChange = (val) => {
     currentPage.value = val
+    fetchUserList()
 }
 
 const handleAdd = () => {
@@ -360,15 +202,14 @@ const handleAdd = () => {
         nickname: '',
         phone: '',
         email: '',
-        role: '普通用户',
-        status: '启用'
+        password: ''
     })
     dialogVisible.value = true
 }
 
 const handleEdit = (row) => {
     dialogTitle.value = '修改用户'
-    Object.assign(form, { ...row })
+    Object.assign(form, { ...row, password: '' })
     dialogVisible.value = true
 }
 
@@ -381,42 +222,40 @@ const handleDelete = (row) => {
             cancelButtonText: '取消',
             type: 'warning'
         }
-    ).then(() => {
-        const index = allUsers.value.findIndex(user => user.id === row.id)
-        if (index !== -1) {
-            allUsers.value.splice(index, 1)
-            ElMessage.success('删除成功')
+    ).then(async () => {
+        try {
+            const response = await deleteUser(row.id)
+            if (response.errCode === 0) {
+                ElMessage.success('删除成功')
+                fetchUserList()
+            }
+        } catch (error) {
+            console.error('删除失败:', error)
+            ElMessage.error('删除失败')
         }
-    }).catch(() => {})
+    }).catch(() => { })
 }
 
 const handleSubmit = () => {
-    formRef.value.validate((valid) => {
+    formRef.value.validate(async (valid) => {
         if (valid) {
-            if (form.id) {
-                const index = allUsers.value.findIndex(user => user.id === form.id)
-                if (index !== -1) {
-                    allUsers.value[index] = { ...form }
-                    ElMessage.success('修改成功')
+            try {
+                let response
+                if (form.id) {
+                    response = await updateUser(form)
+                } else {
+                    response = await addUser(form)
                 }
-            } else {
-                const newUser = {
-                    ...form,
-                    id: Date.now(),
-                    createTime: new Date().toLocaleString('zh-CN', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                        hour12: false
-                    }).replace(/\//g, '-')
+
+                if (response.errCode === 0) {
+                    ElMessage.success(form.id ? '修改成功' : '新增成功')
+                    dialogVisible.value = false
+                    fetchUserList()
                 }
-                allUsers.value.unshift(newUser)
-                ElMessage.success('新增成功')
+            } catch (error) {
+                console.error('操作失败:', error)
+                ElMessage.error('操作失败')
             }
-            dialogVisible.value = false
         }
     })
 }
@@ -439,14 +278,24 @@ const handleBatchDelete = () => {
             cancelButtonText: '取消',
             type: 'warning'
         }
-    ).then(() => {
-        const selectedIds = selectedRows.value.map(row => row.id)
-        allUsers.value = allUsers.value.filter(user => !selectedIds.includes(user.id))
-        selectedRows.value = []
-        ElMessage.success('批量删除成功')
-    }).catch(() => {})
+    ).then(async () => {
+        try {
+            const ids = selectedRows.value.map(row => row.id)
+            const response = await batchDeleteUsers(ids)
+            if (response.errCode === 0) {
+                selectedRows.value = []
+                ElMessage.success('批量删除成功')
+                fetchUserList()
+            }
+        } catch (error) {
+            console.error('批量删除失败:', error)
+            ElMessage.error('批量删除失败')
+        }
+    }).catch(() => { })
 }
 
+// 暂时注释掉批量切换状态功能
+/*
 const handleBatchToggleStatus = () => {
     if (selectedRows.value.length === 0) {
         ElMessage.warning('请选择要操作的用户')
@@ -464,18 +313,22 @@ const handleBatchToggleStatus = () => {
             cancelButtonText: '取消',
             type: 'warning'
         }
-    ).then(() => {
-        const selectedIds = selectedRows.value.map(row => row.id)
-        allUsers.value = allUsers.value.map(user => {
-            if (selectedIds.includes(user.id)) {
-                return { ...user, status: newStatus }
+    ).then(async () => {
+        try {
+            const ids = selectedRows.value.map(row => row.id)
+            const response = await batchToggleUserStatus(ids, newStatus)
+            if (response.errCode === 0) {
+                selectedRows.value = []
+                ElMessage.success(`批量${newStatus}成功`)
+                fetchUserList()
             }
-            return user
-        })
-        selectedRows.value = []
-        ElMessage.success(`批量${newStatus}成功`)
-    }).catch(() => {})
+        } catch (error) {
+            console.error('批量操作失败:', error)
+            ElMessage.error('批量操作失败')
+        }
+    }).catch(() => { })
 }
+*/
 </script>
 
 <style scoped>
@@ -492,15 +345,9 @@ const handleBatchToggleStatus = () => {
     color: #303133;
 }
 
-.search-bar {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
-}
-
 .pagination-container {
     margin-top: 20px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
 }
 </style>

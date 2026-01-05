@@ -29,3 +29,8 @@ spring:
   profiles:
     active:
       - ${SPRING_PROFILES_ACTIVE:dev}
+  task:
+    scheduling:
+      pool:
+        size: 5
+      thread-name-prefix: scheduling-
