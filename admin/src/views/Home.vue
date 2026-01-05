@@ -60,7 +60,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ArrowDown, DataAnalysis, User, Document, Goods, Setting } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'

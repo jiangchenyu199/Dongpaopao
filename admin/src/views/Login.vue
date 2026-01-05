@@ -43,7 +43,7 @@ import { User, Lock } from '@element-plus/icons-vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import { login } from '@/api/user'
 import { useUserStore } from '@/stores/user'
-import dayjs from 'dayjs'
+
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -83,10 +83,9 @@ const handleLogin = async () => {
                     ElMessage.success('登录成功')
                     
                     if (userInfo.lastLoginTime) {
-                        const lastLoginTime = dayjs(userInfo.lastLoginTime).format('YYYY-MM-DD HH:mm:ss')
                         ElNotification({
                             title: '欢迎回来',
-                            message: `上次登录时间：${lastLoginTime}`,
+                            message: `上次登录时间：${userInfo.lastLoginTime}`,
                             type: 'success',
                             duration: 5000,
                             position: 'top-right'

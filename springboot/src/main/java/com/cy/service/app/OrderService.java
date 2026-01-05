@@ -3,6 +3,8 @@ package com.cy.service.app;
 import com.alibaba.fastjson2.JSONObject;
 import com.cy.common.R;
 
+import java.math.BigDecimal;
+
 public interface OrderService {
 
     R createOrder(JSONObject params);
@@ -18,4 +20,6 @@ public interface OrderService {
     R detail(String oid);
 
     R progressingOrder(String type, String uid);
+
+    R rateOrder(String oid, BigDecimal rating);
 }

@@ -7,6 +7,8 @@ import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/order")
 @RequiredArgsConstructor
@@ -84,5 +86,18 @@ public class OrderController {
     @GetMapping("/progressing")
     public R progressingOrder(@Nullable @RequestParam("type") String type, @RequestParam("uid") String uid) {
         return orderService.progressingOrder(type, uid);
+    }
+
+    /**
+     * 订单评分
+     *
+     * @param params 包含订单ID和评分值
+     * @return 评分结果
+     */
+    @PutMapping("/rate")
+    public R rateOrder(@RequestBody JSONObject params) {
+        String oid = params.getString("oid");
+        BigDecimal rating = params.getBigDecimal("rating");
+        return orderService.rateOrder(oid, rating);
     }
 }

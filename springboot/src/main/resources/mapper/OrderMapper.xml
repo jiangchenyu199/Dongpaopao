@@ -42,7 +42,9 @@
             jdr_user.nickname as receiver,
             order_type.type_name as typeName,
         order_status.description as status,
+        order_status.color,
         o.amount,
+        o.rating,
         o.create_time as createTime,
         o.accept_time as acceptTime,
         o.expect_time as expectedDeliveryTime,
@@ -75,13 +77,9 @@
             xdr_user.nickname as buyer,
             jdr_user.nickname as receiver,
             o.amount,
-            CASE o.status
-                WHEN 'D' THEN '待支付'
-                WHEN 'J' THEN '待发货'
-                WHEN 'S' THEN '已完成'
-                WHEN 'C' THEN '已取消'
-                ELSE '未知'
-            END as status,
+            o.rating,
+            order_status.description as status,
+            order_status.color,
             jdr_user.phone as phone,
             addr.detail as address,
             o.create_time as createTime,
@@ -89,6 +87,7 @@
             o.expect_time as shipTime,
             o.complete_time as finishTime
         FROM `order` o
+        LEFT JOIN order_status ON o.status = order_status.status
         LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
         LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
         LEFT JOIN address addr ON o.aid = addr.aid

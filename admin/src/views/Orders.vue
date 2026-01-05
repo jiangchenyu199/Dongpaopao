@@ -31,29 +31,29 @@
                 </el-table-column>
                 <el-table-column prop="status" label="订单状态" width="120px">
                     <template #default="{ row }">
-                        <el-tag :type="getStatusType(row.status)">
+                        <el-text :style="{ color: row.color }">
                             {{ row.status }}
-                        </el-tag>
+                        </el-text>
                     </template>
                 </el-table-column>
                 <el-table-column prop="createTime" label="下单时间" width="180px">
                     <template #default="{ row }">
-                        {{ formatDateTime(row.createTime) }}
+                        {{ row.createTime || '-' }}
                     </template>
                 </el-table-column>
                 <el-table-column prop="acceptTime" label="接单时间" width="180px">
                     <template #default="{ row }">
-                        {{ formatDateTime(row.acceptTime) }}
+                        {{ row.acceptTime || '-' }}
                     </template>
                 </el-table-column>
                 <el-table-column prop="expectedDeliveryTime" label="期望送达时间" width="180px">
                     <template #default="{ row }">
-                        {{ formatDateTime(row.expectedDeliveryTime) }}
+                        {{ row.expectedDeliveryTime || '-' }}
                     </template>
                 </el-table-column>
                 <el-table-column prop="finishTime" label="订单完成时间" width="180px">
                     <template #default="{ row }">
-                        {{ formatDateTime(row.finishTime) }}
+                        {{ row.finishTime || '-' }}
                     </template>
                 </el-table-column>
                 <el-table-column label="送达情况" width="120px">
@@ -65,7 +65,7 @@
                         <span v-else>-</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="rating" label="评分" width="80px" align="center">
+                <el-table-column prop="rating" label="评分" width="200px" align="center">
                     <template #default="{ row }">
                         <span v-if="row.rating !== null && row.rating !== undefined">
                             <el-rate v-model="row.rating" disabled show-score text-color="#ff9900" />
@@ -98,14 +98,22 @@
                         }}</span>
                 </el-descriptions-item>
                 <el-descriptions-item label="订单状态">
-                    <el-tag :type="getStatusType(currentOrder.status)">{{ currentOrder.status }}</el-tag>
+                    <el-text :style="{ color: currentOrder.color }">
+                        {{ currentOrder.status }}
+                    </el-text>
                 </el-descriptions-item>
                 <el-descriptions-item label="联系电话">{{ currentOrder.phone }}</el-descriptions-item>
                 <el-descriptions-item label="收货地址">{{ currentOrder.address }}</el-descriptions-item>
-                <el-descriptions-item label="下单时间">{{ formatDateTime(currentOrder.createTime) }}</el-descriptions-item>
-                <el-descriptions-item label="支付时间">{{ formatDateTime(currentOrder.payTime) }}</el-descriptions-item>
-                <el-descriptions-item label="发货时间">{{ formatDateTime(currentOrder.shipTime) }}</el-descriptions-item>
-                <el-descriptions-item label="完成时间">{{ formatDateTime(currentOrder.finishTime) }}</el-descriptions-item>
+                <el-descriptions-item label="下单时间">{{ currentOrder.createTime || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="支付时间">{{ currentOrder.payTime || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="发货时间">{{ currentOrder.shipTime || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="完成时间">{{ currentOrder.finishTime || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="订单评分">
+                    <span v-if="currentOrder.rating !== null && currentOrder.rating !== undefined">
+                        <el-rate v-model="currentOrder.rating" disabled show-score text-color="#ff9900" />
+                    </span>
+                    <span v-else>-</span>
+                </el-descriptions-item>
             </el-descriptions>
             <template #footer>
                 <el-button @click="detailDialogVisible = false">关闭</el-button>
@@ -119,7 +127,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getOrderList, getOrderDetail } from '@/api/order'
-import dayjs from 'dayjs'
+
 
 const loading = ref(false)
 const searchKeyword = ref('')
@@ -132,10 +140,7 @@ const tableData = ref([])
 
 const allOrders = ref([])
 
-const formatDateTime = (dateTime) => {
-    if (!dateTime) return '-'
-    return dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss')
-}
+
 
 const loadOrderList = async () => {
     loading.value = true
@@ -160,17 +165,7 @@ const loadOrderList = async () => {
     }
 }
 
-const getStatusType = (status) => {
-    const statusMap = {
-        '待支付': 'warning',
-        '已支付': 'primary',
-        '待发货': 'info',
-        '已发货': 'success',
-        '已完成': '',
-        '已取消': 'danger'
-    }
-    return statusMap[status] || ''
-}
+
 
 const getDeliveryStatus = (finishTime, expectedTime) => {
     const finish = new Date(finishTime).getTime()

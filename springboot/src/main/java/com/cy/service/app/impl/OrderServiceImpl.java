@@ -222,4 +222,23 @@ public class OrderServiceImpl implements OrderService {
     public R progressingOrder(String type, String uid) {
         return R.success(orderMapper.processingOrder(type, uid));
     }
+
+    @Override
+    public R rateOrder(String oid, BigDecimal rating) {
+        // 验证评分范围 (0~5星)
+        if (rating == null || rating.compareTo(BigDecimal.ZERO) < 0 || rating.compareTo(new BigDecimal("5.0")) > 0) {
+            return R.error("评分必须在0到5星之间");
+        }
+
+        // 更新订单评分
+        int updateResult = orderMapper.update(new LambdaUpdateWrapper<Order>()
+                .set(Order::getRating, rating)
+                .eq(Order::getOid, oid));
+
+        if (updateResult <= 0) {
+            return R.error("更新评分失败，订单不存在");
+        }
+
+        return R.success();
+    }
 }
