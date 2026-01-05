@@ -47,8 +47,8 @@ public class OrderController {
      */
     @GetMapping("/hall")
     public R hallOrders(@RequestParam("uid") @Nullable String uid,
-                        @RequestParam("serviceId") @Nullable String serviceId) {
-        return orderService.hallOrders(uid, serviceId);
+                        @RequestParam("orderTypeId") @Nullable String orderTypeId) {
+        return orderService.hallOrders(uid, orderTypeId);
     }
 
     /**

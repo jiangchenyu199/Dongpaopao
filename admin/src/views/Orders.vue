@@ -20,10 +20,11 @@
             </div>
 
             <el-table :data="tableData" border stripe style="width: 100%" v-loading="loading">
-                <el-table-column prop="oid" label="订单号" width="150px" />
-                <el-table-column prop="xdr" label="下单人" />
-                <el-table-column prop="jdr" label="接单人" />
-                <el-table-column prop="amount" label="订单金额" align="right">
+                <el-table-column prop="orderNo" label="订单号" width="200px" />
+                <el-table-column prop="buyer" label="下单人" />
+                <el-table-column prop="receiver" label="接单人" />
+                <el-table-column prop="typeName" label="订单类型" width="100px" />
+                <el-table-column prop="amount" label="订单金额" align="right" width="100px">
                     <template #default="{ row }">
                         <span style="color: #f56c6c; font-weight: bold">¥{{ row.amount.toFixed(2) }}</span>
                     </template>
@@ -35,8 +36,44 @@
                         </el-tag>
                     </template>
                 </el-table-column>
-                <el-table-column prop="createTime" label="下单时间" width="200px" />
-                <el-table-column label="操作" align="center">
+                <el-table-column prop="createTime" label="下单时间" width="180px">
+                    <template #default="{ row }">
+                        {{ formatDateTime(row.createTime) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="acceptTime" label="接单时间" width="180px">
+                    <template #default="{ row }">
+                        {{ formatDateTime(row.acceptTime) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="expectedDeliveryTime" label="期望送达时间" width="180px">
+                    <template #default="{ row }">
+                        {{ formatDateTime(row.expectedDeliveryTime) }}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="finishTime" label="订单完成时间" width="180px">
+                    <template #default="{ row }">
+                        {{ formatDateTime(row.finishTime) }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="送达情况" width="120px">
+                    <template #default="{ row }">
+                        <span v-if="row.finishTime && row.expectedDeliveryTime"
+                            :style="{ color: getDeliveryStatusColor(row.finishTime, row.expectedDeliveryTime) }">
+                            {{ getDeliveryStatus(row.finishTime, row.expectedDeliveryTime) }}
+                        </span>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="rating" label="评分" width="80px" align="center">
+                    <template #default="{ row }">
+                        <span v-if="row.rating !== null && row.rating !== undefined">
+                            <el-rate v-model="row.rating" disabled show-score text-color="#ff9900" />
+                        </span>
+                        <span v-else>-</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" align="center" fixed="right" width="120px">
                     <template #default="{ row }">
                         <el-link type="primary" @click="handleViewDetail(row)">
                             查看详情
@@ -65,10 +102,10 @@
                 </el-descriptions-item>
                 <el-descriptions-item label="联系电话">{{ currentOrder.phone }}</el-descriptions-item>
                 <el-descriptions-item label="收货地址">{{ currentOrder.address }}</el-descriptions-item>
-                <el-descriptions-item label="下单时间">{{ currentOrder.createTime }}</el-descriptions-item>
-                <el-descriptions-item label="支付时间">{{ currentOrder.payTime || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="发货时间">{{ currentOrder.shipTime || '-' }}</el-descriptions-item>
-                <el-descriptions-item label="完成时间">{{ currentOrder.finishTime || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="下单时间">{{ formatDateTime(currentOrder.createTime) }}</el-descriptions-item>
+                <el-descriptions-item label="支付时间">{{ formatDateTime(currentOrder.payTime) }}</el-descriptions-item>
+                <el-descriptions-item label="发货时间">{{ formatDateTime(currentOrder.shipTime) }}</el-descriptions-item>
+                <el-descriptions-item label="完成时间">{{ formatDateTime(currentOrder.finishTime) }}</el-descriptions-item>
             </el-descriptions>
             <template #footer>
                 <el-button @click="detailDialogVisible = false">关闭</el-button>
@@ -82,6 +119,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getOrderList, getOrderDetail } from '@/api/order'
+import dayjs from 'dayjs'
 
 const loading = ref(false)
 const searchKeyword = ref('')
@@ -93,6 +131,11 @@ const currentOrder = ref({})
 const tableData = ref([])
 
 const allOrders = ref([])
+
+const formatDateTime = (dateTime) => {
+    if (!dateTime) return '-'
+    return dayjs(dateTime).format('YYYY-MM-DD HH:mm:ss')
+}
 
 const loadOrderList = async () => {
     loading.value = true
@@ -127,6 +170,30 @@ const getStatusType = (status) => {
         '已取消': 'danger'
     }
     return statusMap[status] || ''
+}
+
+const getDeliveryStatus = (finishTime, expectedTime) => {
+    const finish = new Date(finishTime).getTime()
+    const expected = new Date(expectedTime).getTime()
+    if (finish < expected) {
+        return '提前完成'
+    } else if (finish > expected) {
+        return '延迟完成'
+    } else {
+        return '准时完成'
+    }
+}
+
+const getDeliveryStatusColor = (finishTime, expectedTime) => {
+    const finish = new Date(finishTime).getTime()
+    const expected = new Date(expectedTime).getTime()
+    if (finish < expected) {
+        return '#67c23a'
+    } else if (finish > expected) {
+        return '#f56c6c'
+    } else {
+        return '#409eff'
+    }
 }
 
 const handleSearch = () => {

@@ -38,7 +38,7 @@
 	const userStore = useUserStore()
 
 	/* 服务类型id */
-	const serviceId : String = ref()
+	const orderTypeId : String = ref()
 
 	/* 表单模板 */
 	const formTemplate : Array = ref([])
@@ -50,9 +50,9 @@
 	const fromRules : Object = ref({})
 
 	onLoad(async (options) => {
-		serviceId.value = options.serviceId
+		orderTypeId.value = options.serviceId
 		await request({
-			url: '/service/detail?serviceId=' + serviceId.value
+			url: '/order-type/detail?orderTypeId=' + orderTypeId.value
 		}).then((res) => {
 			formTemplate.value = JSON.parse(res.data)
 		})
@@ -67,7 +67,7 @@
 		const feeInfo = feeInfoRef.value?.getFeeData ? feeInfoRef.value.getFeeData() : {};
 
 		return {
-			serviceId: serviceId.value,
+			orderTypeId: orderTypeId.value,
 			uid: null,
 			formData: formData.value,
 			deliverInfo,

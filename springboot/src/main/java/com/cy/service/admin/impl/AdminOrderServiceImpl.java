@@ -1,8 +1,8 @@
 package com.cy.service.admin.impl;
 
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cy.common.R;
-import com.cy.entity.app.Order;
 import com.cy.mapper.app.OrderMapper;
 import com.cy.service.admin.AdminOrderService;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +18,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
     @Override
     public R list(Integer pageNum, Integer pageSize, String keyword, String status) {
-
-        Page<Order> page = orderMapper.selectPage(new Page<>(pageNum, pageSize), null);
-        page.setRecords(page.getRecords());
-        page.setTotal(page.getTotal());
-        return success(page);
+        Page<JSONObject> page = new Page<>(pageNum, pageSize);
+        Page<JSONObject> result = orderMapper.getAdminOrderList(page, null, keyword, status);
+        return success(result);
     }
 
     @Override

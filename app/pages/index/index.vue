@@ -26,12 +26,12 @@
 
 		<!-- 功能图标区 -->
 		<view class="function-grid">
-			<view class="function-item" v-for="item in functionList" :key="item.serviceId"
-				@click="navigateTo(item.serviceId, item.enabled)">
+			<view class="function-item" v-for="item in functionList" :key="item.orderTypeId"
+				@click="navigateTo(item.orderTypeId, item.enabled)">
 				<view class="icon-wrapper" :style="{ backgroundColor: item.bgColor }">
 					<text class="function-emoji">{{ item.icon }}</text>
 				</view>
-				<text class="function-text">{{ item.serviceName }}</text>
+				<text class="function-text">{{ item.typeName }}</text>
 			</view>
 		</view>
 		<!-- 进行中订单区 -->
@@ -49,7 +49,7 @@
 			<view class="active-order-card" v-for="order in activeOrders" :key="order.oid"
 				@click="viewOrderDetail(order.oid)">
 				<view class="order-header">
-					<text class="order-title">{{ order.service_name }}</text>
+					<text class="order-title">{{ order.type_name }}</text>
 				</view>
 				<text class="order-desc">{{ getOrderDetail(order.detail) }}</text>
 				<view class="order-footer">
@@ -81,7 +81,7 @@
 	// 获取服务列表
 	const fetchServiceList = async () => {
 		const res = await request({
-			url: '/service/list'
+			url: '/order-type/list'
 		});
 		functionList.value = res.data
 	};
@@ -98,10 +98,10 @@
 		})
 	};
 
-	const navigateTo = (serviceId : string, enabled : boolean) => {
+	const navigateTo = (orderTypeId : string, enabled : boolean) => {
 		enabled ?
 			uni.navigateTo({
-				url: `/pages/index/order?serviceId=${serviceId}`
+				url: `/pages/index/order?orderTypeId=${orderTypeId}`
 			}) :
 			uni.showToast({
 				title: '敬请期待',

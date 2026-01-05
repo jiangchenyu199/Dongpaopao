@@ -63,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
         // 2. 创建订单
         Order order = new Order();
         order.setXdr(uid);
-        order.setServiceId(params.getString("serviceId"));
+        order.setOrderTypeId(params.getString("orderTypeId"));
         order.setExpectTime(deliverInfo.getLocalDateTime("expectTime"));
         order.setAid(deliverInfo.getString("aid"));
         order.setDetail(formData.toString());
@@ -176,8 +176,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public R hallOrders(String uid, String serviceId) {
-        List<JSONObject> hallOrders = orderMapper.getHallOrders(uid, serviceId);
+    public R hallOrders(String uid, String orderTypeId) {
+        List<JSONObject> hallOrders = orderMapper.getHallOrders(uid, orderTypeId);
         return R.success(hallOrders);
     }
 

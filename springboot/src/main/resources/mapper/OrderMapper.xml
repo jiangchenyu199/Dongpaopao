@@ -7,31 +7,31 @@
         o.expect_time as expectTime,
         o.detail,
         o.amount,
-        service.service_name as serviceName,
-        service.form as form,
-        service.bg_color as bgColor
+        order_type.type_name as typeName,
+        order_type.form as form,
+        order_type.bg_color as bgColor
         FROM `order` o
-        LEFT JOIN service ON o.service_id = service.service_id
+        LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
         WHERE o.status = 'D'
         AND o.xdr != #{uid}
-        <if test="serviceId != null and serviceId != ''">
-            AND o.service_id = #{serviceId}
+        <if test="orderTypeId != null and orderTypeId != ''">
+            AND o.order_type_id = #{orderTypeId}
         </if>
         ORDER BY o.create_time DESC
     </select>
 
     <select id="detail" resultType="com.alibaba.fastjson2.JSONObject">
-        SELECT o.*, service.form, service.service_name, status.description AS status_name
+        SELECT o.*, order_type.form, order_type.type_name, status.description AS status_name
         FROM `order` as o
-        LEFT JOIN service ON o.service_id = service.service_id
+        LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
         LEFT JOIN order_status AS status ON o.status = status.status
         WHERE o.oid = #{oid}
     </select>
 
     <select id="processingOrder" resultType="com.alibaba.fastjson2.JSONObject">
-        SELECT `order`.*, service.service_name
+        SELECT `order`.*, order_type.type_name
         FROM `order`
-        LEFT JOIN service ON `order`.service_id = service.service_id
+        LEFT JOIN order_type ON `order`.order_type_id = order_type.order_type_id
         WHERE `order`.status = 'J' ORDER BY `order`.create_time DESC;
     </select>
 
@@ -40,33 +40,30 @@
             o.oid as orderNo,
             xdr_user.nickname as buyer,
             jdr_user.nickname as receiver,
-            o.amount,
-            CASE o.status
-                WHEN 'D' THEN '待支付'
-                WHEN 'J' THEN '待发货'
-                WHEN 'S' THEN '已完成'
-                WHEN 'C' THEN '已取消'
-                ELSE '未知'
-            END as status,
-            o.create_time as createTime
+            order_type.type_name as typeName,
+        order_status.description as status,
+        o.amount,
+        o.create_time as createTime,
+        o.accept_time as acceptTime,
+        o.expect_time as expectedDeliveryTime,
+        o.complete_time as finishTime
         FROM `order` o
         LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
         LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
+        LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
+        LEFT JOIN order_status ON o.status = order_status.status
         <where>
+            <if test="oid != null and oid != ''">
+                AND o.oid = #{oid}
+            </if>
             <if test="keyword != null and keyword != ''">
                 AND (o.oid LIKE CONCAT('%', #{keyword}, '%')
                 OR xdr_user.nickname LIKE CONCAT('%', #{keyword}, '%')
-                OR jdr_user.nickname LIKE CONCAT('%', #{keyword}, '%'))
+                OR jdr_user.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR order_type.type_name LIKE CONCAT('%', #{keyword}, '%'))
             </if>
             <if test="status != null and status != ''">
-                AND o.status = 
-                <choose>
-                    <when test="status == '待支付'">'D'</when>
-                    <when test="status == '待发货'">'J'</when>
-                    <when test="status == '已完成'">'S'</when>
-                    <when test="status == '已取消'">'C'</when>
-                    <otherwise>'D'</otherwise>
-                </choose>
+                AND order_status.description = #{status}
             </if>
         </where>
         ORDER BY o.create_time DESC

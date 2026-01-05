@@ -11,7 +11,7 @@ public interface OrderService {
 
     R updateOrderStatus(JSONObject params);
 
-    R hallOrders(String uid, String serviceId);
+    R hallOrders(String uid, String orderTypeId);
 
     R listMyOrders(String uid, String role, String status, String type, Integer pageNum, Integer pageSize);
 

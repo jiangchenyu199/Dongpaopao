@@ -4,11 +4,11 @@ import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cy.entity.admin.AdminStatistics;
 import com.cy.entity.app.Order;
-import com.cy.entity.app.Service;
+import com.cy.entity.app.OrderType;
 import com.cy.entity.app.Transaction;
 import com.cy.mapper.admin.AdminStatisticsMapper;
 import com.cy.mapper.app.OrderMapper;
-import com.cy.mapper.app.ServiceMapper;
+import com.cy.mapper.app.OrderTypeMapper;
 import com.cy.mapper.app.TransactionMapper;
 import com.cy.service.admin.AdminStatisticsService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class AdminStatisticsServiceImpl implements AdminStatisticsService {
     private final AdminStatisticsMapper adminStatisticsMapper;
     private final TransactionMapper transactionMapper;
     private final OrderMapper orderMapper;
-    private final ServiceMapper serviceMapper;
+    private final OrderTypeMapper orderTypeMapper;
 
     @Override
     public List<AdminStatistics> getAllStatistics() {
@@ -81,32 +81,32 @@ public class AdminStatisticsServiceImpl implements AdminStatisticsService {
         transactionTrend.put("amounts", amounts);
         result.put("transactionTrend", transactionTrend);
 
-        QueryWrapper<Service> serviceQueryWrapper = new QueryWrapper<>();
-        serviceQueryWrapper.eq("enabled", true);
-        List<Service> services = serviceMapper.selectList(serviceQueryWrapper);
+        QueryWrapper<OrderType> orderTypeQueryWrapper = new QueryWrapper<>();
+        orderTypeQueryWrapper.eq("enabled", true);
+        List<OrderType> orderTypesList = orderTypeMapper.selectList(orderTypeQueryWrapper);
 
-        Map<String, String> serviceIdToNameMap = services.stream()
-                .collect(Collectors.toMap(Service::getServiceId, Service::getServiceName));
+        Map<String, String> orderTypeIdToNameMap = orderTypesList.stream()
+                .collect(Collectors.toMap(OrderType::getOrderTypeId, OrderType::getTypeName));
 
         QueryWrapper<Order> orderQueryWrapper = new QueryWrapper<>();
-        orderQueryWrapper.select("service_id", "count(*) as count");
-        orderQueryWrapper.groupBy("service_id");
-        List<Map<String, Object>> orderServiceList = orderMapper.selectMaps(orderQueryWrapper);
+        orderQueryWrapper.select("order_type_id", "count(*) as count");
+        orderQueryWrapper.groupBy("order_type_id");
+        List<Map<String, Object>> orderTypeList = orderMapper.selectMaps(orderQueryWrapper);
 
-        Map<String, Long> orderTypeMap = orderServiceList.stream()
-                .filter(map -> map.get("service_id") != null)
+        Map<String, Long> orderTypeMap = orderTypeList.stream()
+                .filter(map -> map.get("order_type_id") != null)
                 .collect(Collectors.toMap(
-                        map -> map.get("service_id").toString(),
+                        map -> map.get("order_type_id").toString(),
                         map -> ((Number) map.get("count")).longValue()
                 ));
 
         List<JSONObject> orderTypes = new ArrayList<>();
-        for (Service service : services) {
-            String serviceId = service.getServiceId();
-            String serviceName = service.getServiceName();
-            String bgColor = service.getBgColor();
-            Long count = orderTypeMap.getOrDefault(serviceId, 0L);
-            orderTypes.add(new JSONObject().fluentPut("name", serviceName).fluentPut("value", count).fluentPut("bgColor", bgColor));
+        for (OrderType orderType : orderTypesList) {
+            String orderTypeId = orderType.getOrderTypeId();
+            String typeName = orderType.getTypeName();
+            String bgColor = orderType.getBgColor();
+            Long count = orderTypeMap.getOrDefault(orderTypeId, 0L);
+            orderTypes.add(new JSONObject().fluentPut("name", typeName).fluentPut("value", count).fluentPut("bgColor", bgColor));
         }
 
         result.put("orderTypes", orderTypes);

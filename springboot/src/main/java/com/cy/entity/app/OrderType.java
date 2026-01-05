@@ -3,41 +3,32 @@ package com.cy.entity.app;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@TableName("`order`")
-public class Order {
+@TableName("order_type")
+public class OrderType {
 
     @TableId(type = IdType.ASSIGN_ID)
-    private String oid;
-
-    private String xdr;
-
-    private LocalDateTime createTime;
-
-    private LocalDateTime expectTime;
-
     private String orderTypeId;
 
-    private String aid;
+    private String typeName;
 
-    private String detail;
+    private String emojiIcon;
 
-    private BigDecimal amount;
+    private String bgColor;
 
-    private String jdr;
+    private String form;
 
-    private LocalDateTime acceptTime;
+    private Boolean enabled;
 
-    private LocalDateTime completeTime;
-
-    private Character status;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime createTime;
 }

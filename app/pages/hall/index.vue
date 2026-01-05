@@ -2,7 +2,7 @@
 	<view class="order-page">
 		<!-- 选项卡 -->
 		<u-sticky>
-			<u-tabs :list="serviceList" :scrollable="false" keyName="serviceName" :current="currentTab"
+			<u-tabs :list="serviceList" :scrollable="false" keyName="typeName" :current="currentTab"
 				@change="changeTab">
 				<template #right>
 					<u-icon name="reload" size="21" bold @click="handleRefresh" />
@@ -24,7 +24,7 @@
 
 					<!-- 右侧内容 -->
 					<view class="order-right-content">
-						<text class="detail-item" style="font-weight: bolder;">{{ order.serviceName }}</text>
+						<text class="detail-item" style="font-weight: bolder;">{{ order.typeName }}</text>
 						<text class="detail-item">{{ JSON.parse(order.detail).remark || '暂无备注' }}</text>
 					</view>
 				</view>
@@ -60,24 +60,24 @@
 
 	const loadServices = async () => {
 		await request({
-			url: '/service/list',
+			url: '/order-type/list',
 			method: 'GET'
 		}).then((res) => {
 			// 添加'全部'分类到列表开头
 			serviceList.value = [
-				{ serviceId: '', serviceName: '全部', bgColor: '#1a73e8' }
+				{ orderTypeId: '', typeName: '全部', bgColor: '#1a73e8' }
 			].concat(res.data);
 		});
 	}
 
 	// 加载订单列表
-	const loadOrders = async (serviceId: string) => {
+	const loadOrders = async (orderTypeId: string) => {
 		loading.value = true;
 		try {
-			// 构建请求URL，当serviceId为空时不添加该参数
+			// 构建请求URL，当orderTypeId为空时不添加该参数
 			let url = '/order/hall?uid=' + userInfo.uid;
-			if (serviceId) {
-				url += "&serviceId=" + serviceId;
+			if (orderTypeId) {
+				url += "&orderTypeId=" + orderTypeId;
 			}
 			
 			await request({
@@ -106,14 +106,14 @@
 	// 切换选项卡
 	const changeTab = (item) => {
 		currentTab.value = item.index;
-		loadOrders(item.serviceId)
+		loadOrders(item.orderTypeId)
 	};
 
 	// 刷新数据
 	const handleRefresh = () => {
 		// 刷新时使用当前选中的分类
 		const currentService = serviceList.value[currentTab.value];
-		loadOrders(currentService.serviceId);
+		loadOrders(currentService.orderTypeId);
 		uni.showToast({
 			title: '刷新中...',
 			icon: 'loading',
@@ -135,8 +135,8 @@
 	})
 
 	/* 页面展示 */
-	onShow(async (serviceId) => {
-		loadOrders(serviceId);
+	onShow(async (orderTypeId) => {
+		loadOrders(orderTypeId);
 	});
 </script>
 
