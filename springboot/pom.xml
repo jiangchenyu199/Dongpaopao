@@ -160,7 +160,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.github.solanej.App</mainClass>
+                    <mainClass>com.cy.App</mainClass>
                 </configuration>
                 <executions>
                     <execution>
