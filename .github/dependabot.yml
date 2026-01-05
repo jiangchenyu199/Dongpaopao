@@ -12,6 +12,9 @@ updates:
       backend:
         patterns:
           - "*"
+    ignore:
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+      - dependency-name: "org.mybatis.spring.boot:mybatis-spring-boot-starter"
 
   - package-ecosystem: "npm"
     directory: "/admin"
