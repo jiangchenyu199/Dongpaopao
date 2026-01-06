@@ -1,3 +1,89 @@
+## 3.6.48（2026-01-06）
+improvment: popup组件示例改为组合式API
+
+## 3.6.47（2026-01-06）
+improvment: overlay示例改为组合式API
+
+## 3.6.46（2026-01-05）
+improvment: loading-page组建示例改为组合式API
+
+## 3.6.45（2026-01-05）
+improvment: loading-icon组件示例改为组合式API
+
+## 3.6.44（2026-01-05）
+improvment: link组件示例改为组合式API
+
+## 3.6.43（2026-01-05）
+improvment: line组件示例改为组合式API
+
+## 3.6.42（2026-01-04）
+improvment: layzload组件示例改为组合式API
+
+## 3.6.41（2026-01-04）
+fix: 修复select组件缺少mixin
+
+## 3.6.40（2026-01-04）
+improvment: 去除ReadmeQQ群链接
+
+## 3.6.39（2026-01-04）
+improvment: image组件示例改为组合式API
+
+## 3.6.38（2026-01-03）
+improvment:  icon示例改为组合式API
+
+## 3.6.37（2025-12-31）
+improvment: 静态资源修复
+
+## 3.6.36（2025-12-30）
+improvment: grid示例改为组合式API
+
+## 3.6.35（2025-12-25）
+fix: 修复grid布局由于内容溢出导致形变
+
+## 3.6.34（2025-12-24）
+fix: modal组件asyncCloseTip多语言key未对应
+
+## 3.6.33（2025-12-23）
+fix: 提升$parent方法兼容性修复表单验证失效
+
+## 3.6.32（2025-12-21）
+improvment: 优化slider、search、steps等组件细节
+
+## 3.6.31（2025-12-19）
+improvment: 优化search组件等
+
+## 3.6.30（2025-12-19）
+improvment:  优化完善部分文件注释
+
+## 3.6.29（2025-12-18）
+fix: 修复语法错
+## 3.6.28（2025-12-18）
+fix: 优化$parent方法兼容性
+
+## 3.6.27（2025-12-17）
+add: datetimepicker增加maskClass和maskStyle属性
+
+## 3.6.26（2025-12-16）
+add: picker增加maskClass/maskStyle属性
+
+## 3.6.25（2025-12-15）
+fix: 修复cascader对列表数据层级差异的兼容问题
+
+## 3.6.24（2025-12-14）
+fix: 修复将empty组件的mode设置为wifi后图标不能显示的问题 #928
+
+## 3.6.23（2025-12-13）
+fix: 修复cascader已选中三级菜单后再选择二级菜单时tabs报错问题
+
+## 3.6.22（2025-12-12）
+fix: dragsort组件拖动抖动的问题
+
+## 3.6.21（2025-12-09）
+ fix: form-item初始化时机优化
+
+## 3.6.20（2025-12-08）
+improvment: 优化form组件语法普适性
+
 ## 3.6.19（2025-12-01）
 fix: 修复商品SKU组件i18n
 

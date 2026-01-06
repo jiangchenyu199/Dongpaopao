@@ -1,7 +1,7 @@
 /*
  * @Author       : LQ
  * @Description  :
- * @version      : 1.0
+ * @version      : 3.0
  * @Date         : 2021-08-20 16:44:21
  * @LastAuthor   : jry
  * @lastTime     : 2025-08-20 10:21:55
@@ -44,7 +44,7 @@ export default {
 		readonly: false,
 		shape: 'square',
 		formatter: null,
-		cursorColor: '',
+		cursorColor: '#53c21d',
 		passwordVisibilityToggle: true
 	}
 }

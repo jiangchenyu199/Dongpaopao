@@ -243,9 +243,11 @@
 				this.$set(this.selectedValueIndexs, levelIndex, index);
 				
 				// 清除后续级别的选中值
-				for (let i = levelIndex + 1; i < this.selectedValueIndexs.length; i++) {
-					this.$set(this.selectedValueIndexs, i, undefined);
-				}
+				this.selectedValueIndexs.splice(levelIndex + 1);
+				this.tabsIndex = Math.min(this.tabsIndex, levelIndex);
+				
+				// 清除后续级别的列表
+				this.levelList.splice(levelIndex + 1);
 				
 				// 获取当前选中项
 				const currentItem = this.levelList[levelIndex][index];
