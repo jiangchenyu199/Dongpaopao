@@ -29,7 +29,7 @@
 			<view class="function-item" v-for="item in functionList" :key="item.orderTypeId"
 				@click="navigateTo(item.orderTypeId, item.enabled)">
 				<view class="icon-wrapper" :style="{ backgroundColor: item.bgColor }">
-					<text class="function-emoji">{{ item.icon }}</text>
+					<text class="function-emoji">{{ item.emojiIcon }}</text>
 				</view>
 				<text class="function-text">{{ item.typeName }}</text>
 			</view>
