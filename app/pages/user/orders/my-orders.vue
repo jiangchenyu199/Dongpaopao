@@ -12,43 +12,7 @@
 
 		<!-- 订单列表 - 简单的view容器 -->
 		<view class="order-list">
-			<view class="order-item" v-for="order in filteredOrders" :key="order.oid" @click="navigateToDetail(order)">
-				<view class="order-header">
-					<view class="order-header-left">
-						<text class="order-id">订单号：{{ order.oid }}</text>
-						<view class="order-role-tag" :class="order.role === 'xdr' ? 'sender-tag' : 'receiver-tag'">
-							{{ order.role === 'xdr' ? '我下单' : '我接单' }}
-						</view>
-					</view>
-					<text class="order-status" :style="{ color: getStatusColor(order.status) }">
-						{{ getStatusText(order.status) }}
-					</text>
-				</view>
-				<view class="order-content">
-					<image class="order-image" :src="getOrderImage(order)" mode="aspectFill"></image>
-					<view class="order-info">
-						<text class="order-title">{{ getOrderTypeText(order) }}</text>
-						<text class="order-desc">{{ getOrderDesc(order) }}</text>
-						<text class="order-price">¥{{ order.amount }}</text>
-					</view>
-				</view>
-				<view class="order-footer">
-					<text class="order-time">
-						<text v-if="order.status==='S'">
-							完成时间：{{formatTime(order.completeTime)}}
-						</text>
-						<text v-else-if="order.status==='C'">
-							已取消
-						</text>
-						<text v-else>
-							期望送达时间：{{formatTime(order.expectTime)}}
-						</text>
-						<view class="order-actions">
-							<u-icon name="arrow-right-double" />
-						</view>
-					</text>
-				</view>
-			</view>
+			<order-item v-for="order in filteredOrders" :key="order.oid" :order="order" @click="(order) => navigateToDetail(order)" />
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="filteredOrders.length === 0 && !loading">
@@ -158,6 +122,7 @@
 	import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
 	import request from '@/utils/request.js'
 	import { useUserStore } from '@/stores/user.js'
+	import OrderItem from '@/components/common/order-item.vue'
 
 	const currentTab = ref(0);
 	const loading = ref(false);
@@ -284,63 +249,18 @@
 		}
 	};
 
-	// 根据订单获取图片
-	const getOrderImage = (order) => {
-		const orderType = order.orderType;
-		return orderTypeMap[orderType]?.image || orderTypeMap['E'].image;
-	};
+	
 
-	// 根据订单获取类型文本
-	const getOrderTypeText = (order) => {
-		const orderType = order.orderType;
-		return orderTypeMap[orderType]?.text || '快递代取';
-	};
+	
 
-	// 获取订单状态文本
-	const getStatusText = (status) => {
-		return orderStatusMap[status]?.text || '未知状态';
-	};
+	
 
-	// 获取订单状态颜色
-	const getStatusColor = (status) => {
-		return orderStatusMap[status]?.color || '#9E9E9E';
-	};
+	
 
-	// 获取订单描述
-	const getOrderDesc = (order) => {
-		if (!order.detailObj || Object.keys(order.detailObj).length === 0) {
-			return '暂无描述';
-		}
+	
+		
 
-		const detail = order.detailObj;
-
-		// 优先显示备注
-		if (detail.remark && detail.remark !== '""' && detail.remark !== '') {
-			return detail.remark;
-		}
-
-		const orderType = order.orderType;
-
-		switch (orderType) {
-			case 'E':
-				return `${detail.company || ''} ${detail.location || ''}`.trim() || '快递代取订单';
-			case 'T':
-				return `${detail.location || ''} ${detail.code ? '取件码：****' : ''}`.trim() || '外卖代取订单';
-			case 'C':
-				return `${detail.description || ''} ${detail.weight || ''}`.trim() || '物品搬运订单';
-			case 'P':
-				return detail.description || '商品代购订单';
-			default:
-				return '订单详情';
-		}
-	};
-
-	// 格式化时间
-	const formatTime = (time) => {
-		if (!time) return '刚刚';
-		const date = new Date(time);
-		return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-	};
+	
 
 	// 筛选订单
 	const filteredOrders = computed(() => {

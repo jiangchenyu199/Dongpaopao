@@ -2,76 +2,78 @@
 	<u-notice-bar text="系统通知：本系统将于23:00~7:00进行维护。" speed="150" />
 	<view class="page-container">
 		<!-- Banner区 -->
-		<u-sticky>
-			<view class="banner-container">
-				<swiper class="swiper" circular interval="1500" autoplay="true">
-					<swiper-item>
-						<image class="banner-image"
-							src="https://ai-public.mastergo.com/ai/img_res/6945a6b7e8506df1abcd0efce30213d7.jpg"
-							mode="widthFix" />
-					</swiper-item>
-					<swiper-item>
-						<image class="banner-image"
-							src="https://ai-public.mastergo.com/ai/img_res/ea7587e8643368749c2e819938953839.jpg"
-							mode="widthFix" />
-					</swiper-item>
-					<swiper-item>
-						<image class="banner-image"
-							src="https://ai-public.mastergo.com/ai/img_res/120fce42fd9e45edcd603cc750ec7054.jpg"
-							mode="widthFix" />
-					</swiper-item>
-				</swiper>
-			</view>
-		</u-sticky>
+		<view class="banner-section">
+			<common-banner :images="bannerImages" />
+		</view>
 
 		<!-- 功能图标区 -->
-		<view class="function-grid">
-			<view class="function-item" v-for="item in functionList" :key="item.orderTypeId"
-				@click="navigateTo(item.orderTypeId, item.enabled)">
-				<view class="icon-wrapper" :style="{ backgroundColor: item.bgColor }">
-					<text class="function-emoji">{{ item.emojiIcon }}</text>
-				</view>
-				<text class="function-text">{{ item.typeName }}</text>
+		<view class="function-section">
+			<view class="function-header">
+				<text class="function-title">服务项目</text>
+				<text class="function-more">查看全部</text>
 			</view>
+			<function-grid :items="functionList" @item-click="navigateTo" />
 		</view>
-		<!-- 进行中订单区 -->
-		<view class="active-order-section">
-			<view class="section-header">
-				<view class="section-title">
-					<text>进行中订单</text>
-					<u-badge type="primary" :value="activeOrders.length" />
-				</view>
-				<view class="more-link" @click="goToUserOrders">
-					<text>更多</text>
-					<uni-icons type="arrowright" size="20" color="#999" />
-				</view>
+
+		<!-- 商家推广区 -->
+		<view class="business-section">
+			<view class="function-header">
+				<text class="function-title">商家推广</text>
+				<text class="function-more" @click="handleViewAllBusinesses">查看全部</text>
 			</view>
-			<view class="active-order-card" v-for="order in activeOrders" :key="order.oid"
-				@click="viewOrderDetail(order.oid)">
-				<view class="order-header">
-					<text class="order-title">{{ order.type_name }}</text>
-				</view>
-				<text class="order-desc">{{ getOrderDetail(order.detail) }}</text>
-				<view class="order-footer">
-					<text class="order-time">期望送达时间：{{ order.expect_time }}</text>
-					<text class="order-price">¥{{ order.amount }}</text>
-				</view>
-			</view>
-			<u-empty mode="order" text="暂无进行中订单" v-if="activeOrders.length === 0" />
+			<business-promotion :businesses="businessList" @item-click="handleBusinessClick" />
 		</view>
 	</view>
 </template>
+
 <script lang="ts" setup>
 	import { ref } from 'vue';
 	import request from '@/utils/request.js'
 	import { useUserStore } from '@/stores/user.js'
 	import { onShow } from '@dcloudio/uni-app'
+	import CommonBanner from '@/components/common/banner.vue'
+	import FunctionGrid from '@/components/common/function-grid.vue'
+	import BusinessPromotion from '@/components/common/business-promotion.vue'
 
 	const userInfo = useUserStore().info
 
+	// Banner 图片数据
+	const bannerImages = ref([
+		'https://ai-public.mastergo.com/ai/img_res/6945a6b7e8506df1abcd0efce30213d7.jpg',
+		'https://ai-public.mastergo.com/ai/img_res/ea7587e8643368749c2e819938953839.jpg',
+		'https://ai-public.mastergo.com/ai/img_res/120fce42fd9e45edcd603cc750ec7054.jpg'
+	]);
+
+	// 商家推广数据
+	const businessList = ref([
+		{
+			id: '1',
+			name: '快捷搬家服务',
+			description: '全市范围内专业搬家，2小时内响应，价格透明',
+			image: 'https://img.xjh.me/random_img.php?type=bg&ctype=nature&return=302',
+			tags: ['专业', '快捷', '实惠'],
+			minPrice: '¥100起'
+		},
+		{
+			id: '2',
+			name: '洁净家政保洁',
+			description: '专业保洁团队，使用环保清洁剂，让家焕然一新',
+			image: 'https://img.xjh.me/random_img.php?type=bg&ctype=nature&return=302',
+			tags: ['专业', '环保', '细致'],
+			minPrice: '¥80起'
+		},
+		{
+			id: '3',
+			name: '家电维修专家',
+			description: '专业维修各类家电，30年经验技师，上门服务',
+			image: 'https://img.xjh.me/random_img.php?type=bg&ctype=nature&return=302',
+			tags: ['专业', '快速', '保修'],
+			minPrice: '¥50起'
+		}
+	]);
+
 	// Uniapp 生命周期
 	onShow(() => {
-		fetchActiveOrders();
 		fetchServiceList();
 	})
 
@@ -86,53 +88,33 @@
 		functionList.value = res.data
 	};
 
-	// 进行中订单数据
-	const activeOrders = ref([]);
-
-	// 获取进行中订单
-	const fetchActiveOrders = async () => {
-		request({
-			url: '/order/progressing?type=jdr&uid=' + userInfo.uid,
-		}).then((res) => {
-			activeOrders.value = res.data
-		})
-	};
-
-	const navigateTo = (orderTypeId : string, enabled : boolean) => {
-		enabled ?
+	const navigateTo = (item : any) => {
+		item.enabled ?
 			uni.navigateTo({
-				url: `/pages/index/order?orderTypeId=${orderTypeId}`
+				url: `/pages/index/order?orderTypeId=${item.orderTypeId}`
 			}) :
 			uni.showToast({
 				title: '敬请期待',
 				icon: 'error'
 			});
 	}
-	const goToUserOrders = () => {
-		uni.navigateTo({
-			url: '/pages/user/orders/orders?tab=active'
+
+	// 商家推广点击处理
+	const handleBusinessClick = (business : any) => {
+		uni.showToast({
+			title: `查看商家: ${business.name}`,
+			icon: 'none'
 		});
-	};
-	const viewOrderDetail = (oid : string) => {
-		uni.navigateTo({
-			url: `/pages/common/order-detail/order-detail?oid=${oid}`
-		});
+		// 这里可以添加跳转到商家详情页的逻辑
 	};
 
-	// 解析订单详情，优先显示code，否则显示remark
-	const getOrderDetail = (detail) => {
-		// 尝试解析detail为JSON对象
-		const detailObj = JSON.parse(detail);
-		// 如果包含code字段，则显示code
-		if (detailObj.code) {
-			return `取件码：${detailObj.code}`;
-		}
-		// 如果包含remark字段，则显示remark
-		if (detailObj.remark) {
-			return `订单备注：${detailObj.remark || '无'}`;
-		}
-		// 如果都没有，返回默认信息
-		return '订单详情';
+	// 查看全部商家
+	const handleViewAllBusinesses = () => {
+		uni.showToast({
+			title: '查看全部商家',
+			icon: 'none'
+		});
+		// 这里可以添加跳转到商家列表页的逻辑
 	};
 </script>
 <style>
@@ -148,141 +130,36 @@
 		padding-bottom: 120rpx;
 	}
 
-	/* Banner区样式 */
-	.banner-container {
-		width: 100%;
-		height: 300rpx;
-	}
-
-	.banner-image {
-		width: 100%;
-		height: 100%;
-		border-radius: 0 0 16rpx 16rpx;
-	}
-
-	/* 功能图标区样式 */
-	.function-grid {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: space-between;
-		padding: 30rpx;
-		background-color: #fff;
-		border-radius: 16rpx;
-		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-		margin: -20rpx 20rpx 0;
-		position: relative;
-		z-index: 2;
-	}
-
-	.function-item {
-		width: 20%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		margin-bottom: 20rpx;
-	}
-
-	.icon-wrapper {
-		width: 120rpx;
-		height: 120rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		margin-bottom: 10rpx;
-		border-radius: 16rpx;
-	}
-
-	.function-emoji {
-		font-size: 56rpx;
-		line-height: 1;
-		color: #333;
-	}
-
-	.function-text {
-		font-size: 24rpx;
-		color: #333;
-		text-align: center;
+	.banner-section {
 		width: 100%;
 	}
 
-	/* 进行中订单区样式 */
-	.active-order-section {
-		background-color: #fff;
-		border-radius: 16rpx;
-		padding: 30rpx;
-		margin: 20rpx;
-		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+	.function-section {
+		padding: 0 20rpx 20rpx;
+		margin-top: 20rpx;
 	}
-
-	.section-header {
+	
+	.function-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 20rpx;
+		padding: 0 20rpx;
+		margin-bottom: 16rpx;
 	}
-
-	.section-title {
+	
+	.function-title {
 		font-size: 32rpx;
 		font-weight: bold;
 		color: #333;
-		display: inline-flex;
-		align-items: center;
 	}
-
-	.active-order-card {
-		background-color: #f9f9f9;
-		border-radius: 12rpx;
-		padding: 25rpx;
-		position: relative;
-		margin-bottom: 20rpx;
-	}
-
-	.active-order-card:last-child {
-		margin-bottom: 0;
-	}
-
-	.order-header {
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 15rpx;
-	}
-
-	.order-title {
-		font-size: 28rpx;
-		font-weight: bold;
-		color: #333;
-	}
-
-	.order-desc {
-		font-size: 26rpx;
-		color: #666;
-		margin-bottom: 20rpx;
-		display: block;
-	}
-
-	.order-footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.order-time {
+	
+	.function-more {
 		font-size: 24rpx;
 		color: #999;
 	}
 
-	.order-price {
-		font-size: 28rpx;
-		font-weight: bold;
-		color: #1a73e8;
-	}
-
-	.more-link {
-		display: flex;
-		align-items: center;
-	}
-
-	.more-link text {
-		margin-right: 8rpx;
+	.business-section {
+		padding: 0 20rpx 20rpx;
+		margin-top: 20rpx;
 	}
 </style>

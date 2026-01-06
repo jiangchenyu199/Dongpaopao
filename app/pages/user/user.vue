@@ -1,34 +1,21 @@
 <template>
 	<view class="page-container">
 		<!-- 用户信息区域 -->
-		<view class="user-info" @click="navigateTo('/pages/user/profile/profile')">
-			<view class="user-avatar">
-				<!-- <image class="avatar-image" :src="userInfo.avatar" mode="aspectFill"/> -->
-				<u-avatar size="60" class="avatar-image" :src="userInfo.avatar" mode="aspectFill"/>
-			</view>
-			<view class="user-detail">
-				<text class="user-name">{{ userInfo.nickname }}</text>
-				<text class="user-id">{{ userInfo.uid }}</text>
-			</view>
-			<uni-icons type="arrowright" size="20" color="#999"/>
-		</view>
+		<user-info :user="userInfo" @click="navigateTo('/pages/user/profile/profile')" />
 
 		<!-- 功能列表 -->
 		<view class="function-list">
-			<view class="function-item" v-for="item in functionList" :key="item.id" @click="navigateTo(item.path)">
-				<uni-icons :type="item.icon" size="24" color="#666"/>
-				<text class="function-name">{{ item.name }}</text>
-				<uni-icons type="arrowright" size="20" color="#999"/>
-			</view>
+			<function-item v-for="item in functionList" :key="item.id" :item="item" @click="navigateTo(item.path)" />
 		</view>
 	</view>
 </template>
 <script lang="ts" setup>
 	import { reactive, ref } from 'vue';
-	import { useUserStore } from '@/stores/user';
-	import { onShow } from '@dcloudio/uni-app';
-
-	import request from '../../utils/request';
+import { useUserStore } from '@/stores/user';
+import { onShow } from '@dcloudio/uni-app';
+import request from '../../utils/request';
+import UserInfo from '@/components/common/user-info.vue';
+import FunctionItem from '@/components/common/function-item.vue';
 
 	const userStore = useUserStore()
 

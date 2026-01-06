@@ -49,8 +49,10 @@ public class OrderController {
      */
     @GetMapping("/hall")
     public R hallOrders(@RequestParam("uid") @Nullable String uid,
-                        @RequestParam("orderTypeId") @Nullable String orderTypeId) {
-        return orderService.hallOrders(uid, orderTypeId);
+                        @RequestParam("orderTypeId") @Nullable String orderTypeId,
+                        @Nullable @RequestParam("pageNum") Integer pageNum,
+                        @Nullable @RequestParam("pageSize") Integer pageSize) {
+        return orderService.hallOrders(uid, orderTypeId, pageNum, pageSize);
     }
 
     /**
@@ -83,10 +85,7 @@ public class OrderController {
      * @param uid 用户id
      * @return 进行中的订单列表
      */
-    @GetMapping("/progressing")
-    public R progressingOrder(@Nullable @RequestParam("type") String type, @RequestParam("uid") String uid) {
-        return orderService.progressingOrder(type, uid);
-    }
+    
 
     /**
      * 订单评分

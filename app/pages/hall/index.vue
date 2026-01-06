@@ -12,31 +12,14 @@
 		</u-sticky>
 
 		<!-- 订单列表 -->
-		<view class="order-list">
-			<view class="order-item" v-for="order in orders" :key="order.oid" @click="navigateToDetail(order)">
-				<view class="order-header">
-					<text class="order-id">订单号：{{ order.oid }}</text>
-					<text class="order-status" style="color: #FF9800;">待接单</text>
-				</view>
-				<view class="order-content">
-					<!-- 左侧预留图片位置 -->
-					<image v-if="order.img" :src="order.img" class="order-image" width="150rpx" height="150rpx" />
-
-					<!-- 右侧内容 -->
-					<view class="order-right-content">
-						<text class="detail-item" style="font-weight: bolder;">{{ order.typeName }}</text>
-						<text class="detail-item">{{ JSON.parse(order.detail).remark || '暂无备注' }}</text>
-					</view>
-				</view>
-				<view class="order-footer">
-					<text class="order-time">{{ formatTime(order.createTime) }}</text>
-					<view class="order-actions">
-						<u-icon name="arrow-right-double" />
-					</view>
-				</view>
-			</view>
+		<view class="order-list" @scrolltolower="handleLoadMore">
+			<order-item v-for="order in formattedOrders" :key="order.oid" :order="order"
+				@click="navigateToDetail(order)" />
 
 			<u-empty v-if="orders.length === 0" mode="order" text=" 暂无待接订单" />
+			
+			<!-- 加载更多 -->
+			<u-loadmore v-if="orders.length > 0" :status="loadMoreStatus" :loadingText="'加载中...'" :noMoreText="'没有更多了'" />
 		</view>
 
 		<!-- 下拉刷新 -->
@@ -49,12 +32,50 @@
 	import { onLoad, onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 	import request from '@/utils/request.js'
 	import { useUserStore } from '@/stores/user';
+	import OrderItem from '@/components/common/order-item.vue';
 
 	const currentTab = ref(0);
 	const loading = ref(false);
 	const orders = ref([]);
+	const pageNum = ref(1);
+	const pageSize = ref(10);
+	const hasMore = ref(true);
+	const loadMoreStatus = ref('loadmore');
 
 	const userInfo = useUserStore().info
+
+	// 类型名称到类型代码的映射
+	const typeNameToOrderType = {
+		'快递代取': 'E',
+		'外卖代取': 'T',
+		'物品搬运': 'C',
+		'商品代购': 'P'
+	};
+
+	// 格式化订单数据以匹配 order-item 组件的期望格式
+	const formattedOrders = computed(() => {
+		return orders.value.map(order => {
+			// 解析 detail 字段
+			let detailObj = {};
+			try {
+				detailObj = JSON.parse(order.detail);
+			} catch (e) {
+				detailObj = {};
+			}
+
+			return {
+				...order,
+				status: 'D', // 待接单状态
+				role: 'receiver', // 我接单角色
+				typeName: order.typeName, // 订单类型名称
+				orderType: typeNameToOrderType[order.typeName] || '', // 订单类型代码
+				detailObj: detailObj, // 解析后的详情对象
+				amount: order.amount || 0, // 订单金额
+				expectTime: order.expectTime || order.createTime, // 期望送达时间
+				createTime: order.createTime // 创建时间
+			};
+		});
+	});
 
 	const serviceList : Array = ref([])
 
@@ -71,42 +92,72 @@
 	}
 
 	// 加载订单列表
-	const loadOrders = async (orderTypeId: string) => {
-		loading.value = true;
+	const loadOrders = async (orderTypeId : string, isLoadMore = false) => {
+		if (!isLoadMore) {
+			loading.value = true;
+			pageNum.value = 1;
+			hasMore.value = true;
+		} else if (!hasMore.value) {
+			return;
+		}
+
 		try {
 			// 构建请求URL，当orderTypeId为空时不添加该参数
-			let url = '/order/hall?uid=' + userInfo.uid;
+			let url = `/order/hall?uid=${userInfo.uid}&pageNum=${pageNum.value}&pageSize=${pageSize.value}`;
 			if (orderTypeId) {
-				url += "&orderTypeId=" + orderTypeId;
+				url += `&orderTypeId=${orderTypeId}`;
 			}
-			
+
 			await request({
 				url: url,
 				method: 'GET'
 			}).then((res) => {
-				orders.value = res.data
+				const newOrders = res.data.records || [];
+				
+				if (!isLoadMore) {
+					orders.value = newOrders;
+				} else {
+					orders.value = orders.value.concat(newOrders);
+				}
+
+				// 判断是否还有更多数据
+				hasMore.value = newOrders.length === pageSize.value;
+				
+				// 更新加载状态
+				if (isLoadMore) {
+					loadMoreStatus.value = hasMore.value ? 'loadmore' : 'nomore';
+				}
 			})
 		} catch (error) {
 			uni.showToast({
 				title: '加载订单失败',
 				icon: 'none'
 			});
+			
+			if (isLoadMore) {
+				loadMoreStatus.value = 'loadmore';
+			}
 		} finally {
 			loading.value = false;
 			uni.stopPullDownRefresh();
 		}
 	};
 
-	// 格式化时间
-	const formatTime = (time) => {
-		const date = new Date(time);
-		return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+	// 处理加载更多
+	const handleLoadMore = () => {
+		if (loading.value || !hasMore.value) return;
+		
+		loadMoreStatus.value = 'loading';
+		pageNum.value++;
+		
+		const currentService = serviceList.value[currentTab.value];
+		loadOrders(currentService.orderTypeId, true);
 	};
 
 	// 切换选项卡
 	const changeTab = (item) => {
 		currentTab.value = item.index;
-		loadOrders(item.orderTypeId)
+		loadOrders(item.orderTypeId);
 	};
 
 	// 刷新数据
@@ -123,7 +174,7 @@
 
 	// 跳转到订单详情页 - 传递订单类型和订单号
 	const navigateToDetail = (order : any) => {
-		const orderType = order.order_type || order.inferredType;
+		const orderType = order.order_type || order.inferredType || order.orderType;
 		uni.navigateTo({
 			url: `/pages/common/order-detail/order-detail?oid=${order.oid}&orderType=${orderType}`
 		});
@@ -135,8 +186,13 @@
 	})
 
 	/* 页面展示 */
-	onShow(async (orderTypeId) => {
-		loadOrders(orderTypeId);
+	onShow(async () => {
+		// 确保服务列表已加载，然后加载对应分类的订单
+		if (serviceList.value.length === 0) {
+			await loadServices();
+		}
+		const currentService = serviceList.value[currentTab.value];
+		loadOrders(currentService.orderTypeId);
 	});
 </script>
 
@@ -152,127 +208,5 @@
 		flex: 1;
 		overflow-y: auto;
 		padding: 20rpx;
-	}
-
-	.order-item {
-		background-color: #fff;
-		border-radius: 16rpx;
-		padding: 30rpx;
-		margin-bottom: 20rpx;
-		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-	}
-
-	.order-header {
-		display: flex;
-		justify-content: space-between;
-		margin-bottom: 20rpx;
-	}
-
-	.order-id {
-		font-size: 26rpx;
-		color: #999;
-	}
-
-	.order-status {
-		font-size: 26rpx;
-		font-weight: bold;
-	}
-
-	.order-content {
-		display: flex;
-		margin-bottom: 20rpx;
-		align-items: center;
-	}
-
-	.order-image {
-		width: 160rpx;
-		height: 160rpx;
-		border-radius: 12rpx;
-		margin-right: 20rpx;
-		flex-shrink: 0;
-	}
-
-	/* 右侧内容容器 */
-	.order-right-content {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-	}
-
-	/* 右侧上部分：标签区域 */
-	.order-tag-section {
-		margin-bottom: 12rpx;
-	}
-
-	/* 右侧下部分：详情行 */
-	.order-details-row {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 16rpx;
-	}
-
-	/* 详情项样式 */
-	.detail-item {
-		font-size: 26rpx;
-		color: #333;
-		line-height: 2;
-	}
-
-	/* 位置信息样式 */
-	.detail-item:first-child {
-		color: #666;
-	}
-
-	/* 备注信息样式 */
-	.detail-item:last-child {
-		color: #999;
-		/* 当备注内容较长时自动换行 */
-		word-break: break-word;
-		flex: 1;
-	}
-
-	.order-title {
-		font-size: 30rpx;
-		font-weight: bold;
-		color: #333;
-		margin-bottom: 10rpx;
-		display: -webkit-box;
-		-webkit-line-clamp: 1;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.order-desc {
-		font-size: 26rpx;
-		color: #666;
-		margin-bottom: 10rpx;
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-
-	.order-price {
-		font-size: 28rpx;
-		font-weight: bold;
-		color: #1a73e8;
-	}
-
-	.order-footer {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-
-	.order-time {
-		font-size: 24rpx;
-		color: #999;
-	}
-
-	.order-actions {
-		display: flex;
 	}
 </style>

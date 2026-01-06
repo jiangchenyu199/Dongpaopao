@@ -30,10 +30,10 @@
 
 	import { useUserStore } from '@/stores/user';
 
-	import DeliverInfo from '@/components/orders/deliverInfo.vue';
-	import FeeInfo from '@/components/orders/feeInfo.vue';
+	import DeliverInfo from '@/components/orders/deliver-info.vue';
+	import FeeInfo from '@/components/orders/fee-info.vue';
+	import Checkout from '@/components/orders/checkout.vue';
 	import request from '@/utils/request';
-	import form from '../../uni_modules/uview-plus/components/u-form/form';
 
 	const userStore = useUserStore()
 
@@ -50,11 +50,16 @@
 	const fromRules : Object = ref({})
 
 	onLoad(async (options) => {
-		orderTypeId.value = options.serviceId
+		orderTypeId.value = options.orderTypeId
 		await request({
 			url: '/order-type/detail?orderTypeId=' + orderTypeId.value
 		}).then((res) => {
-			formTemplate.value = JSON.parse(res.data)
+			// 检查form字段类型，避免重复解析
+			if (typeof res.data.form === 'string') {
+				formTemplate.value = JSON.parse(res.data.form)
+			} else {
+				formTemplate.value = res.data.form
+			}
 		})
 	})
 
@@ -133,8 +138,9 @@
 	.page-container {
 		display: flex;
 		flex-direction: column;
-		height: 100%;
+		min-height: 100%;
 		background-color: #f7f7f7;
+		padding-bottom: 140rpx;
 	}
 
 	.card {

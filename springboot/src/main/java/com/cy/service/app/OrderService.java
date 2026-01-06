@@ -13,13 +13,11 @@ public interface OrderService {
 
     R updateOrderStatus(JSONObject params);
 
-    R hallOrders(String uid, String orderTypeId);
+    R hallOrders(String uid, String orderTypeId, Integer pageNum, Integer pageSize);
 
     R listMyOrders(String uid, String role, String status, String type, Integer pageNum, Integer pageSize);
 
     R detail(String oid);
-
-    R progressingOrder(String type, String uid);
 
     R rateOrder(String oid, BigDecimal rating);
 }

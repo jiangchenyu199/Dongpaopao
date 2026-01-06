@@ -3,6 +3,7 @@ package com.cy.service.app.impl;
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cy.common.R;
 import com.cy.entity.app.Conversation;
 import com.cy.entity.app.Order;
@@ -176,8 +177,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public R hallOrders(String uid, String orderTypeId) {
-        List<JSONObject> hallOrders = orderMapper.getHallOrders(uid, orderTypeId);
+    public R hallOrders(String uid, String orderTypeId, Integer pageNum, Integer pageSize) {
+        if (pageNum == null || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+        Page<JSONObject> page = new Page<>(pageNum, pageSize);
+        Page<JSONObject> hallOrders = orderMapper.getHallOrders(page, uid, orderTypeId);
         return R.success(hallOrders);
     }
 
@@ -218,10 +226,7 @@ public class OrderServiceImpl implements OrderService {
         return R.success(result);
     }
 
-    @Override
-    public R progressingOrder(String type, String uid) {
-        return R.success(orderMapper.processingOrder(type, uid));
-    }
+    
 
     @Override
     public R rateOrder(String oid, BigDecimal rating) {

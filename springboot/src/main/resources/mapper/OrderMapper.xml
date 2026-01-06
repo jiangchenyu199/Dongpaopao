@@ -28,13 +28,6 @@
         WHERE o.oid = #{oid}
     </select>
 
-    <select id="processingOrder" resultType="com.alibaba.fastjson2.JSONObject">
-        SELECT `order`.*, order_type.type_name
-        FROM `order`
-        LEFT JOIN order_type ON `order`.order_type_id = order_type.order_type_id
-        WHERE `order`.status = 'J' ORDER BY `order`.create_time DESC;
-    </select>
-
     <select id="getAdminOrderList" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT
             o.oid as orderNo,

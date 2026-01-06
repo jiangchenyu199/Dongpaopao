@@ -57,7 +57,7 @@
 				"pagePath": "pages/index/index",
 				"text": "首页",
 				"iconPath": "static/home.png",
-				"selectedIconPath": "/static/home_selected.png"
+				"selectedIconPath": "static/home_selected.png"
 			},
 			{
 				"pagePath": "pages/hall/index",
