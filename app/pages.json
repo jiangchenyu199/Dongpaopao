@@ -31,7 +31,7 @@
 			"path": "pages/common/order-detail/order-detail"
 		},
 		{
-			"path": "pages/messages/private-chat/private-chat",
+			"path": "pages/messages/private-chat",
 			"style": {
 				"navigationStyle": "custom"
 			}

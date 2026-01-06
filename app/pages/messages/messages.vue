@@ -104,8 +104,9 @@
 
 	// 查看消息详情
 	const viewMessageDetail = (conversation) => {
+		const orderId = conversation.oid || '';
 		uni.navigateTo({
-			url: `/pages/messages/private-chat/private-chat?conversationId=${conversation.cid}&otherUserId=${conversation.otherUserId}&otherUserName=${encodeURIComponent(conversation.otherUserNickname || '用户')}&otherUserAvatar=${encodeURIComponent(conversation.otherUserAvatar || '')}&orderId=${conversation.oid}`
+			url: `/pages/messages/private-chat?conversationId=${conversation.cid}&otherUserId=${conversation.otherUserId}&otherUserName=${encodeURIComponent(conversation.otherUserNickname || '用户')}&otherUserAvatar=${encodeURIComponent(conversation.otherUserAvatar || '')}&orderId=${orderId}`
 		});
 	};
 

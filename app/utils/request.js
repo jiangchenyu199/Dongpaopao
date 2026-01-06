@@ -1,6 +1,8 @@
 // utils/request.js
 
-const BASE_URL = 'https://localhost:8181/api' // 你的基础URL
+import { getApiUrl } from '../config/index.js'
+
+const BASE_URL = getApiUrl()
 
 function request(options) {
 	const config = {

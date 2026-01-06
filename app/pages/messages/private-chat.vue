@@ -20,52 +20,11 @@
 			<!-- 动态日期分隔线：根据消息时间自动插入 -->
 			<template v-for="(message, index) in messages" :key="message.id">
 				<!-- 只在第一条消息或跨天消息前显示日期 -->
-				<view class="date-divider"
-					v-if="index === 0 || !isSameDay(message.createTime, messages[index-1].createTime)">
-					{{ formatDate(message.createTime) }}
-				</view>
+				<chat-date-divider v-if="index === 0 || !isSameDay(message.createTime, messages[index-1].createTime)"
+					:date="message.createTime" />
 
-				<view :class="['message-item', message.isMe ? 'message-right' : 'message-left']"
-					:id="`msg-${message.id}`">
-					<image v-if="!message.isMe" class="avatar"
-						:src="message.avatar || otherUserAvatar || defaultAvatar" />
-
-					<view class="message-content">
-						<view class="message-bubble" :class="{
-							'message-error': message.status === 'error',
-							'image-message': message.isImage,
-							'text-message': !message.isImage
-						}" :style="getBubbleStyle(message)" @longpress="showMessageAction(message, index)">
-
-							<template v-if="message.isImage">
-								<image class="message-image" :src="message.imageUrl" mode="widthFix"
-									@click="previewImage(message.imageUrl)" />
-							</template>
-
-							<template v-else>
-								<text class="message-text">{{ message.content }}</text>
-							</template>
-
-							<view v-if="message.isMe" class="message-status">
-								<u-loading-icon v-if="message.status === 'sending'" size="16" color="#ccc" />
-								<uni-icons v-else-if="message.status === 'error'" type="refresh" size="16"
-									color="#f53f3f" @click="resendMessage(index)" />
-							</view>
-						</view>
-
-						<view class="message-meta">
-							<!-- 显示精确到分钟的时间 -->
-							<text class="message-time">{{ formatMessageTime(message.createTime) }}</text>
-							<view v-if="message.isMe" class="read-status">
-								<uni-icons type="checkmark" size="16" color="rgba(153,153,153,0.8)"
-									v-if="!message.read" />
-								<uni-icons type="checkmark-double" size="16" color="#1989fa" v-if="message.read" />
-							</view>
-						</view>
-					</view>
-
-					<image v-if="message.isMe" class="avatar self-avatar" :src="myAvatar" />
-				</view>
+				<chat-message-bubble :message="message" @showMessageAction="showMessageAction"
+					@resendMessage="resendMessage" @previewImage="previewImage" />
 			</template>
 
 			<view class="loading-more" v-if="isLoadingMore">
@@ -73,63 +32,24 @@
 			</view>
 		</scroll-view>
 
-		<view class="input-area">
-			<view class="input-left">
-				<uni-icons type="image" size="28" color="#666" @click="chooseImage" />
-				<uni-icons type="smile-o" size="28" color="#666" @click="showEmojiPanel" />
-			</view>
+		<chat-input :isConnected="isConnected" @sendMessage="sendMessage" />
 
-			<view class="input-main">
-				<input class="input-box" v-model="inputText" placeholder="输入消息..." placeholder-style="color:#999"
-					@confirm="sendMessage" @input="onInput" :style="{height: inputHeight}" maxlength="500"
-					@focus="onInputFocus" @blur="onInputBlur" />
-			</view>
-
-			<view class="input-right">
-				<u-button type="primary" size="mini" :disabled="!inputText.trim() || !isConnected" @click="sendMessage"
-					class="send-btn">
-					{{ isConnected ? '发送' : '连接中' }}
-				</u-button>
-			</view>
-		</view>
-
-		<view class="emoji-panel" v-if="showEmoji">
-			<view class="emoji-list">
-				<text class="emoji-item" v-for="emoji in emojis" :key="emoji"
-					@click="addEmoji(emoji)">{{ emoji }}</text>
-			</view>
-			<view class="emoji-footer">
-				<uni-button type="text" @click="showEmoji = false">完成</uni-button>
-			</view>
-		</view>
-
-		<uni-popup ref="messagePopup" type="bottom" :mask-click="true">
-			<view class="message-menu">
-				<view class="menu-item" @click="copyMessage">
-					<uni-icons type="copy" size="20" color="#666" />
-					<text>复制</text>
-				</view>
-				<view class="menu-item" @click="forwardMessage" v-if="currentMessage && !currentMessage.isMe">
-					<uni-icons type="forward" size="20" color="#666" />
-					<text>转发</text>
-				</view>
-				<view class="menu-item" @click="deleteMessage" v-if="currentMessage && currentMessage.isMe">
-					<uni-icons type="trash" size="20" color="#666" />
-					<text>删除</text>
-				</view>
-				<view class="menu-item cancel" @click="closeMessageMenu">
-					<text>取消</text>
-				</view>
-			</view>
-		</uni-popup>
+		<chat-message-menu ref="messageMenuRef" :currentMessage="currentMessage" @copyMessage="copyMessage"
+			@forwardMessage="forwardMessage" @deleteMessage="deleteMessage" @close="closeMessageMenu" />
 	</view>
 </template>
 
 <script lang="ts" setup>
 	import { ref, onMounted, onUnmounted, nextTick, computed, getCurrentInstance } from 'vue';
-	import { onLoad, onHide, onShow, onUnload } from '@dcloudio/uni-app'
-	import { useUserStore } from '@/stores/user'
-	import request from '@/utils/request';
+import { onLoad, onHide, onShow, onUnload } from '@dcloudio/uni-app'
+import { useUserStore } from '@/stores/user'
+import request from '@/utils/request';
+import { getWebSocketUrl } from '@/config/index.js';
+import { formatMessageTime, formatDate, isSameDay } from '@/utils/tools';
+import ChatMessageBubble from '@/components/chat/message-bubble.vue';
+import ChatInput from '@/components/chat/chat-input.vue';
+import ChatDateDivider from '@/components/chat/date-divider.vue';
+import ChatMessageMenu from '@/components/chat/message-menu.vue';
 
 	const userStore = useUserStore();
 	const userInfo = userStore.info;
@@ -143,7 +63,6 @@
 	const orderInfo = ref(null);
 
 	const messages = ref([]);
-	const inputText = ref('');
 	const isOnline = ref(true);
 	const isLoadingMore = ref(false);
 	const hasMore = ref(true);
@@ -157,14 +76,11 @@
 	const maxReconnectCount = 5;
 
 	const scrollTop = ref(0);
-	const showEmoji = ref(false);
-	const inputHeight = ref('80rpx');
 	const refresherTriggered = ref(false);
-	const currentDate = ref('');
-	const messagePopup = ref(null);
 	const currentMessage = ref(null);
 	const currentMessageIndex = ref(-1);
 	const scrollViewRef = ref(null);
+	const messageMenuRef = ref(null);
 
 	// 新增：状态栏和导航栏高度
 	const statusBarHeight = ref(0);
@@ -172,37 +88,9 @@
 
 	const defaultAvatar = '/static/images/default-avatar.png';
 	const myAvatar = userInfo.avatar;
-	const emojis = ['😀', '😁', '😂', '🤣', '😃', '😄', '😅', '😆', '😉', '😊', '🙂', '🙃', '😋', '😎', '😍', '😘', '🥰', '😗', '😙', '👍', '👎', '👊', '✌️', '🤝', '🙏', '🎉', '🎊', '🔥', '🥳', '😢', '😭', '😱', '😡', '🤔', '🤫', '🤭', '😴'];
 
 	let hasInitWebSocket = false;
 	let scrollTimer = null;
-
-	// 消息气泡样式
-	const getBubbleStyle = (message) => {
-		if (message.isImage) {
-			return {};
-		}
-
-		const content = message.content || '';
-		const length = content.length;
-
-		let maxWidth = '600rpx';
-
-		if (length <= 5) {
-			maxWidth = '200rpx';
-		} else if (length <= 10) {
-			maxWidth = '300rpx';
-		} else if (length <= 20) {
-			maxWidth = '400rpx';
-		} else if (length <= 30) {
-			maxWidth = '500rpx';
-		}
-
-		return {
-			'max-width': maxWidth,
-			'min-width': '120rpx'
-		};
-	};
 
 	onLoad(async (options) => {
 		// 获取状态栏和导航栏高度
@@ -243,7 +131,7 @@
 	});
 
 	const loadOrderInfo = async () => {
-		if (!orderId.value) return;
+		if (!orderId.value || orderId.value === 'undefined') return;
 		const res = await request({
 			url: `/order/detail?oid=${orderId.value}`,
 			method: 'GET'
@@ -252,32 +140,6 @@
 		if (res.errCode === 0) {
 			orderInfo.value = res.data;
 		}
-	};
-
-	const getStatusClass = (status) => {
-		const statusMap = {
-			'D': 'status-waiting',
-			'J': 'status-processing',
-			'S': 'status-completed',
-			'C': 'status-cancelled'
-		};
-		return statusMap[status] || 'status-waiting';
-	};
-
-	const getStatusText = (status) => {
-		const statusMap = {
-			'D': '等待接单',
-			'J': '进行中',
-			'S': '已完成',
-			'C': '已取消'
-		};
-		return statusMap[status] || '未知状态';
-	};
-
-	const formatOrderTime = (time) => {
-		if (!time) return '';
-		const date = new Date(time);
-		return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 	};
 
 	const loadHistoryMessages = async (loadMore = false) => {
@@ -365,7 +227,7 @@
 			return;
 		}
 
-		const wsUrl = `wss://localhost:8181/api/ws`;
+		const wsUrl = getWebSocketUrl('/ws');
 
 		socketTask.value = uni.connectSocket({
 			url: wsUrl,
@@ -500,9 +362,8 @@
 		}, 100);
 	};
 
-	const sendMessage = async () => {
-		const content = inputText.value.trim();
-		if (!content) return;
+	const sendMessage = async (content) => {
+		if (!content.trim()) return;
 
 		if (!isConnected.value) {
 			await sendMessageByHttp(content);
@@ -524,8 +385,6 @@
 		};
 
 		messages.value.push(tempMessage);
-		inputText.value = '';
-		resetInputHeight();
 
 		// 立即滚动到底部
 		scrollToBottom();
@@ -600,11 +459,11 @@
 		}
 	};
 
-	const resendMessage = async (index) => {
-		if (index < 0 || index >= messages.value.length) return;
-
-		const message = messages.value[index];
+	const resendMessage = async (message) => {
 		if (!message.isMe || message.status !== 'error') return;
+
+		const index = messages.value.findIndex(msg => msg.id === message.id);
+		if (index === -1) return;
 
 		messages.value[index].status = 'sending';
 		await sendMessageByHttp(message.content, message.id);
@@ -655,34 +514,6 @@
 		}, delay);
 	};
 
-	// 格式化消息时间为"HH:MM"
-	const formatMessageTime = (date) => {
-		if (!(date instanceof Date)) date = new Date(date);
-		const hours = date.getHours().toString().padStart(2, '0');
-		const minutes = date.getMinutes().toString().padStart(2, '0');
-		return `${hours}:${minutes}`;
-	};
-
-	// 格式化日期为"YYYY年MM月DD日 星期X"
-	const formatDate = (date) => {
-		if (!(date instanceof Date)) date = new Date(date);
-		const year = date.getFullYear();
-		const month = (date.getMonth() + 1).toString().padStart(2, '0');
-		const day = date.getDate().toString().padStart(2, '0');
-		const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
-		const weekDay = weekDays[date.getDay()];
-		return `${year}年${month}月${day}日 ${weekDay}`;
-	};
-
-	// 判断两个日期是否为同一天
-	const isSameDay = (date1, date2) => {
-		if (!(date1 instanceof Date)) date1 = new Date(date1);
-		if (!(date2 instanceof Date)) date2 = new Date(date2);
-		return date1.getFullYear() === date2.getFullYear() &&
-			date1.getMonth() === date2.getMonth() &&
-			date1.getDate() === date2.getDate();
-	};
-
 	const updateMessageStatus = (messageId, status) => {
 		const index = messages.value.findIndex(msg => msg.id === messageId);
 		if (index !== -1) {
@@ -691,10 +522,6 @@
 				messages.value[index].read = true;
 			}
 		}
-	};
-
-	const resetInputHeight = () => {
-		inputHeight.value = '80rpx';
 	};
 
 	const handleBack = () => {
@@ -707,48 +534,11 @@
 		loadHistoryMessages(true);
 	};
 
-	const onInput = (e) => {
-		const value = e.detail.value;
-		inputText.value = value;
-		const lineHeight = 32;
-		const maxLines = 5;
-		const textLength = value.length;
-		const lines = Math.ceil(textLength / 15);
-		const newHeight = Math.min(lines * lineHeight + 16, maxLines * lineHeight + 16) + 'rpx';
-		inputHeight.value = newHeight;
+	const loadMoreMessages = () => {
+		loadHistoryMessages(true);
 	};
 
-	const onInputFocus = () => {
-		setTimeout(() => {
-			scrollToBottom();
-		}, 300);
-	};
 
-	const onInputBlur = () => { };
-
-	const chooseImage = () => {
-		uni.chooseImage({
-			count: 1,
-			sizeType: ['original', 'compressed'],
-			sourceType: ['album', 'camera'],
-			success: (res) => {
-				const tempCreateTime = new Date();
-				const tempMessage = {
-					id: 'temp_' + Date.now(),
-					senderId: userInfo.uid,
-					imageUrl: res.tempFilePaths[0],
-					messageType: 2,
-					createTime: tempCreateTime,
-					status: 2,
-					isMe: true,
-					isImage: true
-				};
-
-				messages.value.push(formatMessage(tempMessage));
-				scrollToBottom();
-			}
-		});
-	};
 
 	const previewImage = (url) => {
 		uni.previewImage({
@@ -756,54 +546,45 @@
 		});
 	};
 
-	const showEmojiPanel = () => {
-		showEmoji.value = !showEmoji.value;
-	};
-
-	const addEmoji = (emoji) => {
-		inputText.value += emoji;
-	};
-
-	const showMessageAction = (message, index) => {
+	const showMessageAction = (message) => {
 		currentMessage.value = message;
-		currentMessageIndex.value = index;
-		messagePopup.value.open();
+		currentMessageIndex.value = messages.value.findIndex(msg => msg.id === message.id);
+		messageMenuRef.value.open();
 	};
 
 	const closeMessageMenu = () => {
-		messagePopup.value.close();
 		currentMessage.value = null;
 		currentMessageIndex.value = -1;
 	};
 
-	const copyMessage = () => {
-		if (!currentMessage.value) return;
+	const copyMessage = (message) => {
+		if (!message) return;
 		let text = '';
-		if (currentMessage.value.isImage) {
+		if (message.isImage) {
 			text = '[图片消息]';
 		} else {
-			text = currentMessage.value.content || '';
+			text = message.content || '';
 		}
 		uni.setClipboardData({
 			data: text,
 			success: () => {
 				uni.showToast({ title: '复制成功', icon: 'none' });
-				closeMessageMenu();
 			}
 		});
 	};
 
-	const forwardMessage = () => {
-		if (!currentMessage.value) return;
+	const forwardMessage = (message) => {
+		if (!message) return;
 		uni.showToast({ title: '转发功能待实现', icon: 'none' });
-		closeMessageMenu();
 	};
 
-	const deleteMessage = () => {
-		if (!currentMessage.value || currentMessageIndex.value === -1) return;
-		messages.value.splice(currentMessageIndex.value, 1);
-		closeMessageMenu();
-		uni.showToast({ title: '已删除', icon: 'none' });
+	const deleteMessage = (message) => {
+		if (!message) return;
+		const index = messages.value.findIndex(msg => msg.id === message.id);
+		if (index !== -1) {
+			messages.value.splice(index, 1);
+			uni.showToast({ title: '已删除', icon: 'none' });
+		}
 	};
 
 	const handleUserJoin = (message) => {
@@ -847,7 +628,6 @@
 
 	.chat-content {
 		flex: 1;
-		/* padding: 10rpx; */
 		background-color: #f5f5f5;
 		overflow-y: auto;
 		padding-bottom: 140rpx;
@@ -856,291 +636,10 @@
 		/* 导航栏高度，可根据实际情况调整 */
 	}
 
-	.date-divider {
-		text-align: center;
-		font-size: 24rpx;
-		color: #999;
-		margin: 30rpx 0;
-		padding: 12rpx 30rpx;
-		background-color: rgba(0, 0, 0, 0.05);
-		border-radius: 20rpx;
-		display: inline-block;
-		position: relative;
-		left: 50%;
-		transform: translateX(-50%);
-	}
-
-	.message-item {
-		display: flex;
-		margin-bottom: 30rpx;
-		align-items: flex-start;
-	}
-
-	.message-left {
-		justify-content: flex-start;
-	}
-
-	.message-right {
-		justify-content: flex-end;
-	}
-
-	.avatar {
-		width: 80rpx;
-		height: 80rpx;
-		border-radius: 50%;
-		flex-shrink: 0;
-	}
-
-	.message-left .avatar {
-		margin-right: 20rpx;
-	}
-
-	.message-right .avatar {
-		margin-left: 20rpx;
-		order: 2;
-	}
-
-	.message-content {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		max-width: 70%;
-	}
-
-	.message-right .message-content {
-		align-items: flex-end;
-	}
-
-	.message-left .message-content {
-		align-items: flex-start;
-	}
-
-	.message-bubble {
-		padding: 20rpx 24rpx;
-		border-radius: 20rpx;
-		position: relative;
-		word-break: break-word;
-		min-width: 120rpx;
-		width: fit-content;
-		max-width: 600rpx;
-	}
-
-	.message-left .message-bubble {
-		background-color: #fff;
-		border-top-left-radius: 8rpx;
-		box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
-	}
-
-	.message-right .message-bubble {
-		background-color: #1989fa;
-		border-top-right-radius: 8rpx;
-	}
-
-	.message-text {
-		font-size: 32rpx;
-		line-height: 1.5;
-		word-break: break-word;
-	}
-
-	.message-left .message-text {
-		color: #333;
-	}
-
-	.message-right .message-text {
-		color: #fff;
-	}
-
-	.message-meta {
-		display: flex;
-		align-items: center;
-		margin-top: 8rpx;
-		gap: 10rpx;
-	}
-
-	.message-time {
-		font-size: 22rpx;
-		color: #999;
-	}
-
-	.read-status {
-		display: flex;
-		align-items: center;
-	}
-
-	.input-area {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		display: flex;
-		align-items: flex-end;
-		padding: 20rpx 30rpx;
-		background-color: #fff;
-		border-top: 1px solid #eee;
-		gap: 20rpx;
-		z-index: 999;
-		box-sizing: border-box;
-		min-height: 120rpx;
-	}
-
-	.input-left {
-		display: flex;
-		align-items: center;
-		gap: 20rpx;
-		flex-shrink: 0;
-	}
-
-	.input-main {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		min-width: 0;
-	}
-
-	.input-right {
-		display: flex;
-		align-items: center;
-		flex-shrink: 0;
-	}
-
-	.input-box {
-		width: 100%;
-		padding: 16rpx 24rpx;
-		background-color: #f5f5f5;
-		border-radius: 40rpx;
-		font-size: 28rpx;
-		line-height: 1.4;
-		height: 80rpx;
-		min-height: 80rpx;
-		max-height: 200rpx;
-		box-sizing: border-box;
-	}
-
-	.send-btn {
-		height: 70rpx;
-		border-radius: 35rpx;
-		line-height: 70rpx;
-		padding: 0 30rpx;
-		min-width: 120rpx;
-		flex-shrink: 0;
-		margin: 0;
-	}
-
-	.emoji-panel {
-		background-color: #fff;
-		border-top: 1px solid #eee;
-		padding: 20rpx;
-		position: fixed;
-		bottom: 120rpx;
-		left: 0;
-		right: 0;
-		z-index: 998;
-		max-height: 400rpx;
-	}
-
-	.emoji-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 20rpx;
-		max-height: 300rpx;
-		overflow-y: auto;
-	}
-
-	.emoji-item {
-		font-size: 40rpx;
-		padding: 10rpx;
-		border-radius: 8rpx;
-		line-height: 1;
-	}
-
-	.emoji-item:active {
-		background-color: #f1f1f1;
-	}
-
-	.emoji-footer {
-		display: flex;
-		justify-content: flex-end;
-		margin-top: 20rpx;
-		padding-top: 20rpx;
-		border-top: 1px solid #eee;
-	}
-
 	.loading-more {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 20rpx 0;
-		font-size: 24rpx;
-		color: #999;
-	}
-
-	.message-menu {
-		background-color: #fff;
-		border-radius: 16rpx 16rpx 0 0;
-		padding: 20rpx 0;
-	}
-
-	.menu-item {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100rpx;
-		border-bottom: 1px solid #eee;
+		text-align: center;
+		padding: 20rpx;
 		font-size: 28rpx;
-		gap: 15rpx;
-	}
-
-	.menu-item.cancel {
-		color: #f53f3f;
-		margin-top: 15rpx;
-		border-bottom: none;
-		border-top: 1px solid #eee;
-	}
-
-	.message-status {
-		position: absolute;
-		right: -40rpx;
-		bottom: 10rpx;
-		width: 32rpx;
-		height: 32rpx;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.message-error .message-status {
-		right: -35rpx;
-	}
-
-	.message-error {
-		background-color: #fff3f3;
-		border: 1px solid #ffcdcd;
-	}
-
-	.message-error .message-text {
-		color: #f53f3f;
-	}
-
-	.message-image {
-		max-width: 300rpx;
-		border-radius: 8rpx;
-		display: block;
-	}
-
-	.image-message {
-		padding: 10rpx;
-		background: transparent !important;
-	}
-
-	/* 修复滚动条样式 */
-	.chat-content ::-webkit-scrollbar {
-		width: 0;
-		height: 0;
-		color: transparent;
-	}
-
-	/* 确保图标按钮有合适的点击区域 */
-	.input-left .uni-icons {
-		padding: 10rpx;
+		color: #999;
 	}
 </style>
