@@ -6,13 +6,14 @@
         SELECT
         c.cid as cid,
         c.oid as oid,
-        c.last_message_content as lastMessage,
+        c.last_message_content as lastMessageContent,
         c.last_message_send_time as lastMessageTime,
         c.message_counts as messageCounts,
         c.status as conversationStatus,
+        0 as unreadCount,
 
         -- 订单信息
-        o.order_type as orderType,
+        ot.form as orderType,
         o.amount as orderAmount,
         o.status as orderStatus,
 
@@ -41,6 +42,7 @@
 
         FROM conversation c
         INNER JOIN `order` o ON c.oid = o.oid
+        LEFT JOIN order_type ot ON o.order_type_id = ot.order_type_id
         LEFT JOIN user u ON (
         -- 复杂的用户关联逻辑
         (o.xdr = #{uid} AND u.uid = o.jdr) OR -- 当前用户是下单人，关联接单人
