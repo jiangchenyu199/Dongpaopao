@@ -25,7 +25,9 @@ public class ConversationController {
     }
 
     @GetMapping("/list")
-    public R listConversation(@RequestParam("uid") String uid) {
-        return conversationService.listConversation(uid);
+    public R listConversation(@RequestParam("uid") String uid,
+                             @RequestParam(defaultValue = "1") Integer pageNum,
+                             @RequestParam(defaultValue = "10") Integer pageSize) {
+        return conversationService.listConversation(uid, pageNum, pageSize);
     }
 }

@@ -2,6 +2,7 @@ package com.cy.service.app.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cy.common.R;
 import com.cy.entity.app.Conversation;
 import com.cy.entity.app.Order;
@@ -36,7 +37,9 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public R listConversation(String uid) {
-        return R.success(conversationMapper.listConversation(uid));
+    public R listConversation(String uid, Integer pageNum, Integer pageSize) {
+        Page<JSONObject> page = new Page<>(pageNum, pageSize);
+        Page<JSONObject> result = conversationMapper.listConversation(page, uid);
+        return R.success(result);
     }
 }

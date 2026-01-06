@@ -5,10 +5,10 @@
     </view>
     <view class="message-content">
       <view class="message-header">
-        <text class="message-name">{{ name }}</text>
+        <text :class="['message-name', { 'unread': unreadCount > 0 }]">{{ name }}</text>
         <text class="message-time">{{ formattedTime }}</text>
       </view>
-      <text class="message-preview">{{ preview }}</text>
+      <text :class="['message-preview', { 'unread': unreadCount > 0 }]">{{ preview }}</text>
       <view class="message-badge" v-if="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
     </view>
   </view>
@@ -16,15 +16,15 @@
 
 <script lang="ts" setup>
   import { defineProps, defineEmits, computed } from 'vue';
+  import { formatTime } from '@/utils/tools';
 
   interface Conversation {
+    cid?: string;
     otherUserAvatar?: string;
     otherUserNickname?: string;
     unreadCount?: number;
     lastMessageTime?: string | Date;
     lastMessageContent?: string;
-    orderType?: string;
-    orderStatus?: string;
   }
 
   const props = defineProps<{
@@ -37,13 +37,6 @@
 
   const handleClick = () => {
     emit('click', props.conversation);
-  };
-
-  const ORDER_TYPE_MAP: Record<string, string> = {
-    'E': '快递代取',
-    'T': '外卖代取', 
-    'C': '物品搬运',
-    'P': '商品代购'
   };
 
   const avatar = computed(() => {
@@ -67,43 +60,8 @@
       return props.conversation.lastMessageContent;
     }
     
-    const orderTypeText = ORDER_TYPE_MAP[props.conversation.orderType || ''] || '订单';
-    
-    if (props.conversation.orderStatus === 'D') {
-      return `${orderTypeText}等待接单中`;
-    } else if (props.conversation.orderStatus === 'J') {
-      return `${orderTypeText}进行中`;
-    } else if (props.conversation.orderStatus === 'S') {
-      return `${orderTypeText}已完成`;
-    } else {
-      return `您有一个${orderTypeText}订单`;
-    }
+    return '暂无消息';
   });
-
-  const formatTime = (time?: string | Date) => {
-    if (!time) return '';
-    
-    const date = new Date(time);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor(diff / (1000 * 60));
-    
-    if (minutes < 1) {
-      return '刚刚';
-    } else if (hours < 1) {
-      return `${minutes}分钟前`;
-    } else if (days === 0) {
-      return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-    } else if (days === 1) {
-      return '昨天';
-    } else if (days < 7) {
-      return `${days}天前`;
-    } else {
-      return `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-    }
-  };
 </script>
 
 <style scoped>
@@ -168,6 +126,16 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .message-name.unread {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .message-preview.unread {
+    font-weight: bold;
+    color: #333;
   }
 
   .message-badge {

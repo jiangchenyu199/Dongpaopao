@@ -5,46 +5,18 @@
     <select id="listConversation" resultType="com.alibaba.fastjson2.JSONObject">
         SELECT
         c.cid as cid,
-        c.oid as oid,
         c.last_message_content as lastMessageContent,
         c.last_message_send_time as lastMessageTime,
-        c.message_counts as messageCounts,
-        c.status as conversationStatus,
         0 as unreadCount,
 
-        -- 订单信息
-        ot.form as orderType,
-        o.amount as orderAmount,
-        o.status as orderStatus,
-
-        -- 对方用户信息（逻辑复杂）
-        CASE
-        -- 如果当前用户是下单人，对方就是接单人
-        WHEN o.xdr = #{uid} THEN o.jdr
-        -- 如果当前用户是接单人，对方就是下单人
-        WHEN o.jdr = #{uid} THEN o.xdr
-        -- 如果是未接单状态，对方就是系统或空
-        ELSE NULL
-        END as otherUserId,
-
         -- 对方用户详细信息
-        u.uid as otherUserUid,
         u.nickname as otherUserNickname,
-        u.avatar as otherUserAvatar,
-        u.phone as otherUserPhone,
-
-        -- 当前用户在对话中的角色
-        CASE
-        WHEN o.xdr = #{uid} THEN 'CREATOR'
-        WHEN o.jdr = #{uid} THEN 'ACCEPTOR'
-        ELSE 'UNKNOWN'
-        END as userRole
+        u.avatar as otherUserAvatar
 
         FROM conversation c
         INNER JOIN `order` o ON c.oid = o.oid
-        LEFT JOIN order_type ot ON o.order_type_id = ot.order_type_id
         LEFT JOIN user u ON (
-        -- 复杂的用户关联逻辑
+        -- 关联对方用户信息
         (o.xdr = #{uid} AND u.uid = o.jdr) OR -- 当前用户是下单人，关联接单人
         (o.jdr = #{uid} AND u.uid = o.xdr) -- 当前用户是接单人，关联下单人
         )
@@ -53,7 +25,6 @@
         (o.xdr = #{uid} OR o.jdr = #{uid})
         -- 会话状态是开启的
         AND c.status = 'OPENING'
-        -- 并且用户在会话参与者中
-        ORDER BY c.last_message_send_time DESC;
+        ORDER BY c.last_message_send_time DESC
     </select>
 </mapper>

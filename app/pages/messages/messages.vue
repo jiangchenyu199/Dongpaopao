@@ -1,7 +1,7 @@
 <template>
 	<view class="page-container">
 		<!-- 消息列表 -->
-		<view class="message-list">
+		<view class="message-list" @scrolltolower="loadMore">
 			<message-item v-for="conversation in conversationList" :key="conversation.cid" :conversation="conversation" @click="viewMessageDetail" />
 			
 			<!-- 空状态 -->
@@ -12,6 +12,12 @@
 			<!-- 加载状态 -->
 			<view class="loading-state" v-if="loading">
 				<text class="loading-text">加载中...</text>
+			</view>
+			
+			<!-- 触底加载状态 -->
+			<view class="load-more" v-if="conversationList.length > 0 && !loading">
+				<text v-if="hasMore" class="load-more-text">上拉加载更多</text>
+				<text v-else class="load-more-text">已加载全部</text>
 			</view>
 		</view>
 	</view>
@@ -31,9 +37,17 @@
 	// 会话列表数据
 	const conversationList = ref([]);
 	const loading = ref(false);
+	const hasMore = ref(true);
+	const pageNum = ref(1);
+	const pageSize = ref(10);
 
 	// 获取用户会话列表
-	const fetchConversationList = async () => {
+	const fetchConversationList = async (isRefresh = false) => {
+		if (isRefresh) {
+			pageNum.value = 1;
+			hasMore.value = true;
+		}
+		
 		loading.value = true;
 		try {
 			const uid = userInfo?.uid;
@@ -47,13 +61,22 @@
 			}
 
 			const res = await request({
-				url: `/conversation/list?uid=${uid}`,
+				url: `/conversation/list?uid=${uid}&pageNum=${pageNum.value}&pageSize=${pageSize.value}`,
 				method: 'GET'
 			});
 			
 			if (res.errCode === 0) {
-				// 直接使用返回的 data 数组
-				conversationList.value = res.data || [];
+				const data = res.data || {};
+				const records = data.records || [];
+				
+				if (isRefresh) {
+					conversationList.value = records;
+				} else {
+					conversationList.value = [...conversationList.value, ...records];
+				}
+				
+				// 判断是否还有更多数据
+				hasMore.value = records.length === pageSize.value;
 			} else {
 				uni.showToast({
 					title: res.msg || '加载失败',
@@ -71,6 +94,14 @@
 		}
 	};
 
+	// 加载更多
+	const loadMore = async () => {
+		if (loading.value || !hasMore.value) return;
+		
+		pageNum.value++;
+		await fetchConversationList(false);
+	};
+
 	// 查看消息详情
 	const viewMessageDetail = (conversation) => {
 		uni.navigateTo({
@@ -80,16 +111,16 @@
 
 	// 生命周期
 	onMounted(() => {
-		fetchConversationList();
+		fetchConversationList(true);
 	});
 
 	onShow(() => {
 		// 每次页面显示时刷新数据
-		fetchConversationList();
+		fetchConversationList(true);
 	});
 
 	onPullDownRefresh(() => {
-		fetchConversationList();
+		fetchConversationList(true);
 	});
 </script>
 
@@ -216,6 +247,19 @@
 
 	.loading-text {
 		font-size: 28rpx;
+		color: #999;
+	}
+	
+	/* 加载更多状态 */
+	.load-more {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		padding: 30rpx 0;
+	}
+	
+	.load-more-text {
+		font-size: 26rpx;
 		color: #999;
 	}
 </style>

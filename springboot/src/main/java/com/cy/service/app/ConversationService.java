@@ -7,5 +7,5 @@ public interface ConversationService {
 
     R createConversation(JSONObject params);
 
-    R listConversation(String uid);
+    R listConversation(String uid, Integer pageNum, Integer pageSize);
 }
