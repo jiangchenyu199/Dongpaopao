@@ -15,7 +15,7 @@ public interface OrderService {
 
     R hallOrders(String uid, String orderTypeId, Integer pageNum, Integer pageSize);
 
-    R listMyOrders(String uid, String role, String status, String type, Integer pageNum, Integer pageSize);
+    R listOrders(String uid, String role, String status, String type, Integer pageNum, Integer pageSize);
 
     R detail(String oid);
 

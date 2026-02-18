@@ -17,15 +17,15 @@
 		<DeliverInfo ref="deliverInfoRef" />
 
 		<!-- 费用信息区域 -->
-		<FeeInfo ref="feeInfoRef" @submit="handleSubmit" />
+		<FeeInfo ref="feeInfoRef" />
 
-		<!-- TODO: 拆分结账模块 -->
-		<Checkout @submit="handleSubmit" />
+		<!-- 结账模块 -->
+		<Checkout :totalAmount="totalAmount" @submit="handleSubmit" />
 	</view>
 </template>
 
 <script lang="ts" setup>
-	import { ref } from 'vue';
+	import { ref, computed, watch } from 'vue';
 	import { onLoad } from '@dcloudio/uni-app'
 
 	import { useUserStore } from '@/stores/user';
@@ -66,6 +66,14 @@
 	const deliverInfoRef = ref(null);
 	const feeInfoRef = ref(null);
 
+	// 计算合计金额
+	const totalAmount = computed(() => {
+		if (feeInfoRef.value && feeInfoRef.value.totalAmount) {
+			return feeInfoRef.value.totalAmount;
+		}
+		return '0.00';
+	});
+
 	// 获取所有表单数据
 	const getAllFormData = () => {
 		const deliverInfo = deliverInfoRef.value?.getFormData ? deliverInfoRef.value.getFormData() : {};
@@ -81,9 +89,27 @@
 	};
 
 	/* 验证表单 */
-	const validateForm = (formData : any) => {
-		return true;
-	};
+const validateForm = (formData : any) => {
+	// 验证订单金额
+	if (!formData.feeInfo || !formData.feeInfo.orderAmount) {
+		uni.showToast({
+			title: '请输入订单金额',
+			icon: 'error'
+		});
+		return false;
+	}
+	
+	const orderAmount = parseFloat(formData.feeInfo.orderAmount);
+	if (isNaN(orderAmount) || orderAmount <= 0) {
+		uni.showToast({
+			title: '订单金额必须大于0',
+			icon: 'error'
+		});
+		return false;
+	}
+	
+	return true;
+};
 
 	/* 下单操作 */
 	const handleSubmit = () => {

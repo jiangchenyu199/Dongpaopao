@@ -6,37 +6,34 @@
 		<view class="fee-info">
 			<view class="info-item">
 				<text class="label">订单金额</text>
-				<text class="value">¥{{ orderAmount }}</text>
-			</view>
-			<view class="info-item">
-				<text class="label">配送费</text>
-				<text class="value">¥{{ deliveryFee }}</text>
-			</view>
-			<view class="info-item">
-				<text class="label">小费</text>
-				<text class="value">¥{{ tip }}</text>
-			</view>
-			<view class="info-item total">
-				<text class="label">总计</text>
-				<text class="value total-value">¥{{ totalAmount }}</text>
+				<u-input v-model="orderAmount" type="number" placeholder="请输入订单金额" prefix="¥" class="amount-input" />
 			</view>
 		</view>
 	</view>
 </template>
 
 <script lang="ts" setup>
-	import { withDefaults } from 'vue'
+	import { ref, computed } from 'vue'
 	
-	const props = withDefaults(defineProps<{
-		orderAmount: string
-		deliveryFee: string
-		tip: string
-		totalAmount: string
-	}>(), {
-		orderAmount: '0.00',
-		deliveryFee: '0.00',
-		tip: '0.00',
-		totalAmount: '0.00'
+	const orderAmount = ref('')
+	
+	const totalAmount = computed(() => {
+		const order = parseFloat(orderAmount.value) || 0
+		return order.toFixed(2)
+	})
+	
+	// 实现getFeeData方法，用于获取费用数据
+	const getFeeData = () => {
+		return {
+			orderAmount: orderAmount.value,
+			totalAmount: totalAmount.value
+		}
+	}
+	
+	// 暴露方法给父组件
+	defineExpose({
+		getFeeData,
+		totalAmount
 	})
 </script>
 
@@ -85,5 +82,10 @@
 		font-size: 30rpx;
 		font-weight: bold;
 		color: #ff6600;
+	}
+	
+	.amount-input {
+		width: 200rpx;
+		text-align: right;
 	}
 </style>

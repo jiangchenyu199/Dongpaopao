@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
         JSONObject deliverInfo = params.getJSONObject("deliverInfo");
         JSONObject feeInfo = params.getJSONObject("feeInfo");
 
-        BigDecimal totalFee = feeInfo.getBigDecimal("totalFee");
+        BigDecimal totalFee = feeInfo.getBigDecimal("totalAmount");
         String uid = params.getString("uid");
 
         // 参数校验
@@ -51,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
             return R.error("金额非法");
         }
 
-        // 1. 先扣减余额（原子操作）
+        // 1. 先扣减余额
         boolean deductSuccess = userMapper.update(null, new LambdaUpdateWrapper<User>()
                 .setSql("balance = balance - " + totalFee)
                 .eq(User::getUid, uid)
@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService {
 
         int insertResult = orderMapper.insert(order);
         if (insertResult <= 0) {
-            // 如果订单创建失败，需要回滚余额（这里需要事务支持）
+            // 如果订单创建失败，需要回滚余额
             userMapper.update(null, new LambdaUpdateWrapper<User>()
                     .setSql("balance = balance + " + totalFee)
                     .eq(User::getUid, uid));
@@ -133,9 +133,8 @@ public class OrderServiceImpl implements OrderService {
             return R.error("更新订单状态失败");
         }
 
-        // 如果状态更新为已完成（S），则处理金额返还和流水记录
         if ('S' == status.charAt(0)) {
-            // 1. 将金额返还给用户（增加余额）
+            // 1. 将金额返还给用户
             boolean refundSuccess = userMapper.update(null, new LambdaUpdateWrapper<User>()
                     .setSql("balance = balance + " + order.getAmount())
                     .eq(User::getUid, order.getJdr())) > 0;
@@ -144,18 +143,17 @@ public class OrderServiceImpl implements OrderService {
                 throw new RuntimeException("返还金额失败");
             }
 
-            // 2. 在流水表中添加完成订单记录（收入为正数）
+            // 2. 在流水表中添加完成订单记录
             JSONObject transactionParam = new JSONObject();
             transactionParam.put("oid", oid);
             transactionParam.put("uid", order.getXdr());
             transactionParam.put("type", "COMPLETE_ORDER");
-            transactionParam.put("amount", order.getAmount()); // 收入为正数
+            transactionParam.put("amount", order.getAmount());
             transactionService.create(transactionParam);
         }
 
         if ('C' == status.charAt(0)) {
-            // 3. 如果状态更新为已取消（C），则处理金额返还和流水记录
-            // 1. 将金额返还给用户（增加余额）
+            // 1. 将金额返还给用户
             boolean refundSuccess = userMapper.update(null, new LambdaUpdateWrapper<User>()
                     .setSql("balance = balance + " + order.getAmount())
                     .eq(User::getUid, order.getXdr())) > 0;
@@ -164,12 +162,12 @@ public class OrderServiceImpl implements OrderService {
                 throw new RuntimeException("返还金额失败");
             }
 
-            // 2. 在流水表中添加取消订单记录（收入为正数）
+            // 2. 在流水表中添加取消订单记录
             JSONObject transactionParam = new JSONObject();
             transactionParam.put("oid", oid);
             transactionParam.put("uid", order.getXdr());
             transactionParam.put("type", "CANCEL_ORDER");
-            transactionParam.put("amount", order.getAmount()); // 收入为正数
+            transactionParam.put("amount", order.getAmount());
             transactionService.create(transactionParam);
         }
 
@@ -190,24 +188,15 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public R listMyOrders(String uid, String role, String status, String type, Integer pageNum, Integer pageSize) {
-        LambdaQueryWrapper<Order> wrapper = new LambdaQueryWrapper<Order>()
-                .eq(Order::getXdr, uid).or().eq(Order::getJdr, uid);
-        if (role != null && !role.isEmpty()) {
-            if ("xdr".equals(role)) {
-                wrapper.eq(Order::getXdr, uid);
-            } else if ("jdr".equals(role)) {
-                wrapper.eq(Order::getJdr, uid);
-            }
-        } else {
-            wrapper.eq(Order::getXdr, uid).or().eq(Order::getJdr, uid);
+    public R listOrders(String uid, String role, String status, String type, Integer pageNum, Integer pageSize) {
+        if ("jsr".equals(role)) {
+            role = "jdr";
         }
-
-        if (status != null && !status.isEmpty()) {
-            wrapper.eq(Order::getStatus, status.charAt(0));
+        List<JSONObject> list = orderMapper.listMyOrders(uid, role, status, type);
+        if (list == null) {
+            list = new java.util.ArrayList<>();
         }
-        wrapper.orderByDesc(Order::getCreateTime);
-        return R.success(orderMapper.selectList(wrapper));
+        return R.success(list);
     }
 
     @Override

@@ -1,175 +1,165 @@
-create table address
-(
-    aid        varchar(36) not null comment '地址id'
-        primary key,
-    uid        varchar(50) not null comment '用户id',
-    sjr        varchar(50) null comment '收件人',
-    phone      varchar(13) null comment '联系电话',
-    detail     text        null comment '地址详情',
-    is_default tinyint     null comment '是否默认地址'
-)
-    comment '地址表';
+CREATE TABLE `address` (
+  `aid` varchar(36) NOT NULL COMMENT '地址id',
+  `uid` varchar(50) NOT NULL COMMENT '用户id',
+  `sjr` varchar(50) DEFAULT NULL COMMENT '收件人',
+  `phone` varchar(13) DEFAULT NULL COMMENT '联系电话',
+  `detail` text COMMENT '地址详情',
+  `is_default` tinyint(1) DEFAULT NULL COMMENT '是否默认地址',
+  PRIMARY KEY (`aid`),
+  KEY `fk_address_user` (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='地址表'
 
-create index fk_address_user
-    on address (uid);
+CREATE TABLE `admin_permission` (
+  `id` int DEFAULT NULL COMMENT '主键id',
+  `pkey` varchar(30) DEFAULT NULL COMMENT '键',
+  `name` varchar(50) DEFAULT NULL COMMENT '权限名'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='管理端权限表'
 
-create table conversation
-(
-    cid                    varchar(50)                                          not null comment '会话id'
-        primary key,
-    oid                    varchar(50)                                          null comment '订单id',
-    message_counts         int                        default 0                 not null comment '对话消息总条数',
-    create_time            datetime                   default CURRENT_TIMESTAMP null comment '会话创建时间',
-    last_message_content   text                                                 null,
-    last_message_send_time datetime                   default (now())           null comment '最后一条消息送达时间',
-    last_message_read_time datetime                                             null comment '最后一条消息已读时间',
-    status                 enum ('OPENING', 'CLOSED') default 'OPENING'         null comment '会话状态'
-)
-    comment '会话表';
+CREATE TABLE `admin_role_permission` (
+  `rid` int DEFAULT NULL,
+  `pid` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限表'
 
-create table message
-(
-    mid       varchar(50)                                                          not null comment '消息id'
-        primary key,
-    cid       varchar(50)                                                          null comment '会话id',
-    sender    varchar(50)                                                          null comment '发送者',
-    receiver  varchar(50)                                                          null comment '接收者',
-    type      enum ('TEXT', 'VOICE', 'IMAGE')                                      null comment '消息类型',
-    content   longblob                                                             null comment '内容',
-    status    enum ('SENDING', 'SENT', 'READ', 'FAILED') default 'SENT'            null comment '消息状态',
-    send_time datetime                                   default CURRENT_TIMESTAMP null comment '发送消息时间',
-    read_time datetime                                                             null
-)
-    comment '聊天消息表';
+CREATE TABLE `admin_statistics` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `data` json NOT NULL COMMENT '统计数据',
+  `create_time` datetime DEFAULT NULL COMMENT '统计时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='统计表'
 
-create table `order`
-(
-    oid           varchar(32)                               not null comment '订单id'
-        primary key,
-    xdr           varchar(50)                               null comment '下单人',
-    create_time   datetime                  default (now()) null comment '下单时间',
-    expect_time   datetime                                  null comment '期望送达时间',
-    order_type    enum ('E', 'T', 'C', 'P') default 'E'     null comment '订单类型',
-    aid           varchar(20)                               null comment '地址id',
-    detail        json                                      null comment '订单详细数据',
-    amount        decimal(5, 2)                             null comment '金额',
-    jdr           varchar(50)                               null comment '接单人',
-    accept_time   datetime                                  null,
-    complete_time datetime                                  null comment '完成时间',
-    status        enum ('D', 'J', 'S', 'C') default 'D'     null comment '订单状态（D：待接单；J：进行中；S：已完成；C：已取消）',
-    constraint unique_oid
-        unique (oid)
-)
-    comment '订单表';
+CREATE TABLE `admin_system_config` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `config_key` varchar(50) DEFAULT NULL COMMENT '配置键',
+  `config_value` varchar(100) DEFAULT NULL COMMENT '配置值',
+  `description` varchar(100) DEFAULT NULL COMMENT '描述',
+  `create_time` datetime DEFAULT (now()) COMMENT '创建时间',
+  `update_time` datetime DEFAULT (now()) COMMENT '更新时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='管理端系统设置'
 
-create index fk_order_address
-    on `order` (aid);
+CREATE TABLE `admin_user` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT 'id',
+  `username` varchar(20) NOT NULL COMMENT '用户名',
+  `nickname` varchar(50) DEFAULT NULL COMMENT '昵称',
+  `password` varchar(64) NOT NULL COMMENT '密码',
+  `phone` varchar(15) DEFAULT NULL COMMENT '手机号',
+  `email` varchar(50) DEFAULT NULL COMMENT '邮箱',
+  `role_id` int DEFAULT NULL COMMENT '角色id',
+  `status` tinyint(1) DEFAULT '0' COMMENT '状态',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `last_login_time` datetime DEFAULT NULL COMMENT '上次登录时间',
+  PRIMARY KEY (`id`),
+  KEY `admin_user_id_index` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
-create index fk_order_user_jdr
-    on `order` (jdr);
+CREATE TABLE `admin_user_role` (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
+  `name` varchar(50) DEFAULT NULL COMMENT '角色名',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色'
 
-create index fk_order_user_xdr
-    on `order` (xdr);
+CREATE TABLE `conversation` (
+  `cid` varchar(50) NOT NULL COMMENT '会话id',
+  `oid` varchar(50) DEFAULT NULL COMMENT '订单id',
+  `message_counts` int NOT NULL DEFAULT '0' COMMENT '对话消息总条数',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '会话创建时间',
+  `last_message_content` text,
+  `last_message_send_time` datetime DEFAULT (now()) COMMENT '最后一条消息送达时间',
+  `last_message_read_time` datetime DEFAULT NULL COMMENT '最后一条消息已读时间',
+  `status` enum('OPENING','CLOSED') DEFAULT 'OPENING' COMMENT '会话状态',
+  PRIMARY KEY (`cid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='会话表'
 
-create table school
-(
-    sid   int auto_increment
-        primary key,
-    sname varchar(100) not null
-)
-    comment '学校表';
+CREATE TABLE `message` (
+  `mid` varchar(50) NOT NULL COMMENT '消息id',
+  `cid` varchar(50) DEFAULT NULL COMMENT '会话id',
+  `sender` varchar(50) DEFAULT NULL COMMENT '发送者',
+  `receiver` varchar(50) DEFAULT NULL COMMENT '接收者',
+  `type` enum('TEXT','VOICE','IMAGE') DEFAULT NULL COMMENT '消息类型',
+  `content` longblob COMMENT '内容',
+  `status` enum('SENDING','SENT','READ','FAILED') DEFAULT 'SENT' COMMENT '消息状态',
+  `send_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '发送消息时间',
+  `read_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`mid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='聊天消息表'
 
-create table settings
-(
-    id     int auto_increment
-        primary key,
-    `key`  varchar(100) null,
-    value  text         null,
-    remark text         null comment '注释'
-)
-    comment '系统设置';
+CREATE TABLE `order` (
+  `oid` varchar(32) NOT NULL COMMENT '订单id',
+  `xdr` varchar(50) DEFAULT NULL COMMENT '下单人',
+  `create_time` datetime DEFAULT (now()) COMMENT '下单时间',
+  `expect_time` datetime DEFAULT NULL COMMENT '期望送达时间',
+  `order_type_id` varchar(50) DEFAULT NULL COMMENT '订单分类',
+  `img` text COMMENT '图片url',
+  `aid` varchar(20) DEFAULT NULL COMMENT '地址id',
+  `detail` json DEFAULT NULL COMMENT '订单详细数据',
+  `amount` decimal(5,2) DEFAULT NULL COMMENT '金额',
+  `jdr` varchar(50) DEFAULT NULL COMMENT '接单人',
+  `accept_time` datetime DEFAULT NULL,
+  `complete_time` datetime DEFAULT NULL COMMENT '完成时间',
+  `status` char(1) DEFAULT 'D' COMMENT '订单状态（D：待接单；J：进行中；S：已完成；C：已取消）',
+  `rating` decimal(2,1) DEFAULT '0.0' COMMENT '评分',
+  PRIMARY KEY (`oid`),
+  UNIQUE KEY `unique_oid` (`oid`),
+  KEY `fk_order_address` (`aid`),
+  KEY `fk_order_user_jdr` (`jdr`),
+  KEY `fk_order_user_xdr` (`xdr`),
+  KEY `order_order_status_status_fk` (`status`),
+  CONSTRAINT `order_order_status_status_fk` FOREIGN KEY (`status`) REFERENCES `order_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单表'
 
-create table user
-(
-    uid      char(36)                                 not null comment '用户ID'
-        primary key,
-    openid   char(28)                                 null,
-    nickname varchar(30)                              null comment '昵称',
-    sex      smallint       default (-(1))            null,
-    sid      int                                      null,
-    phone    varchar(13)                              null comment '手机号',
-    avatar   longtext                                 null comment '头像url',
-    ctime    datetime       default CURRENT_TIMESTAMP null comment '注册时间',
-    balance  decimal(10, 2) default 0.00              null comment '余额',
-    constraint unique_openid
-        unique (openid),
-    constraint unique_uid
-        unique (uid),
-    constraint chk_amount_non_negative
-        check (`balance` >= 0)
-)
-    comment '用户表';
+CREATE TABLE `order_status` (
+  `status` char(1) NOT NULL COMMENT '订单状态',
+  `description` varchar(50) DEFAULT NULL COMMENT '描述',
+  `color` char(7) NOT NULL DEFAULT '#FFFFFF' COMMENT '十六进制文字颜色',
+  PRIMARY KEY (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单状态'
 
-create table transaction
-(
-    tid         varchar(50)                                                                not null comment '交易id'
-        primary key,
-    oid         varchar(50)                                                                null comment '订单id',
-    uid         varchar(50)                                                                null comment '用户id',
-    amount      decimal(10, 2)                                                             null comment '交易金额',
-    type        enum ('RECHARGE', 'WITHDRAWAL', 'ORDER', 'COMPLETE_ORDER', 'CANCEL_ORDER') not null comment '交易类型（充值、提现、下单、完单、取消订单）',
-    create_time datetime default (now())                                                   null comment '交易时间',
-    constraint transaction_order_oid_fk
-        foreign key (oid) references `order` (oid),
-    constraint transaction_user_uid_fk
-        foreign key (uid) references user (uid),
-    constraint ck_amount
-        check (`amount` >= 0)
-)
-    comment '交易记录表';
-
--- 系统日志表
-CREATE TABLE `sys_log` (
-  `log_id` varchar(64) NOT NULL COMMENT '日志ID',
-  `user_id` varchar(64) DEFAULT NULL COMMENT '操作用户ID',
-  `user_name` varchar(100) DEFAULT NULL COMMENT '操作用户名称',
-  `operation_type` varchar(20) DEFAULT NULL COMMENT '操作类型：LOGIN(登录), LOGOUT(登出), CREATE(创建), UPDATE(更新), DELETE(删除), QUERY(查询), UPLOAD(上传), DOWNLOAD(下载)',
-  `module` varchar(100) DEFAULT NULL COMMENT '操作模块',
-  `description` varchar(255) DEFAULT NULL COMMENT '操作内容描述',
-  `request_url` varchar(255) DEFAULT NULL COMMENT '请求URL',
-  `request_method` varchar(10) DEFAULT NULL COMMENT '请求方法',
-  `request_params` text COMMENT '请求参数',
-  `result` varchar(10) DEFAULT NULL COMMENT '操作结果：SUCCESS(成功), FAILURE(失败)',
-  `error_info` text COMMENT '错误信息（如果操作失败）',
-  `ip` varchar(50) DEFAULT NULL COMMENT '操作IP地址',
-  `execution_time` bigint(20) DEFAULT NULL COMMENT '操作耗时（毫秒）',
+CREATE TABLE `order_type` (
+  `order_type_id` varchar(50) NOT NULL COMMENT '服务id',
+  `type_name` varchar(10) DEFAULT NULL COMMENT '服务名称',
+  `emoji_icon` varchar(5) DEFAULT NULL COMMENT '图标',
+  `bg_color` varchar(10) DEFAULT NULL COMMENT '十六进制背景色',
+  `form` json DEFAULT NULL COMMENT '表单模板',
+  `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  PRIMARY KEY (`log_id`),
-  KEY `idx_user_id` (`user_id`),
-  KEY `idx_operation_type` (`operation_type`),
-  KEY `idx_module` (`module`),
-  KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统日志表';
+  PRIMARY KEY (`order_type_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单类型'
 
--- 添加索引以优化查询性能
--- 这些索引已经在创建表时定义，如果需要额外索引可以在此添加
--- ALTER TABLE `sys_log` ADD INDEX `idx_ip` (`ip`);
--- ALTER TABLE `sys_log` ADD INDEX `idx_result` (`result`);
+CREATE TABLE `school` (
+  `sid` int NOT NULL AUTO_INCREMENT,
+  `sname` varchar(100) NOT NULL,
+  PRIMARY KEY (`sid`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='学校表'
 
--- 示例：添加分区以优化大表性能（可选）
--- 当数据量很大时，可以考虑按时间分区
--- ALTER TABLE `sys_log` PARTITION BY RANGE (TO_DAYS(create_time)) (
---   PARTITION p202401 VALUES LESS THAN (TO_DAYS('2024-02-01')),
---   PARTITION p202402 VALUES LESS THAN (TO_DAYS('2024-03-01')),
---   PARTITION p202403 VALUES LESS THAN (TO_DAYS('2024-04-01')),
---   PARTITION p202404 VALUES LESS THAN (TO_DAYS('2024-05-01')),
---   PARTITION p202405 VALUES LESS THAN (TO_DAYS('2024-06-01')),
---   PARTITION p202406 VALUES LESS THAN (TO_DAYS('2024-07-01')),
---   PARTITION p202407 VALUES LESS THAN (TO_DAYS('2024-08-01')),
---   PARTITION p202408 VALUES LESS THAN (TO_DAYS('2024-09-01')),
---   PARTITION p202409 VALUES LESS THAN (TO_DAYS('2024-10-01')),
---   PARTITION p202410 VALUES LESS THAN (TO_DAYS('2024-11-01')),
---   PARTITION p202411 VALUES LESS THAN (TO_DAYS('2024-12-01')),
---   PARTITION p202412 VALUES LESS THAN (TO_DAYS('2025-01-01')),
---   PARTITION future VALUES LESS THAN MAXVALUE
--- );
+CREATE TABLE `transaction` (
+  `tid` varchar(50) NOT NULL COMMENT '交易id',
+  `oid` varchar(50) DEFAULT NULL COMMENT '订单id',
+  `uid` varchar(50) DEFAULT NULL COMMENT '用户id',
+  `amount` decimal(10,2) DEFAULT NULL COMMENT '交易金额',
+  `type` enum('RECHARGE','WITHDRAWAL','ORDER','COMPLETE_ORDER','CANCEL_ORDER') NOT NULL COMMENT '交易类型（充值、提现、下单、完单、取消订单）',
+  `create_time` datetime DEFAULT (now()) COMMENT '交易时间',
+  PRIMARY KEY (`tid`),
+  KEY `transaction_order_oid_fk` (`oid`),
+  KEY `transaction_user_uid_fk` (`uid`),
+  CONSTRAINT `transaction_order_oid_fk` FOREIGN KEY (`oid`) REFERENCES `order` (`oid`),
+  CONSTRAINT `transaction_user_uid_fk` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`),
+  CONSTRAINT `ck_amount` CHECK ((`amount` >= 0))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='交易记录表'
+
+CREATE TABLE `user` (
+  `uid` char(36) NOT NULL COMMENT '用户ID',
+  `openid` char(28) DEFAULT NULL,
+  `nickname` varchar(30) DEFAULT NULL COMMENT '昵称',
+  `sex` smallint DEFAULT (-(1)),
+  `sid` int DEFAULT NULL,
+  `phone` varchar(13) DEFAULT NULL COMMENT '手机号',
+  `avatar` longtext COMMENT '头像url',
+  `ctime` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+  `balance` decimal(10,2) DEFAULT '0.00' COMMENT '余额',
+  PRIMARY KEY (`uid`),
+  UNIQUE KEY `unique_uid` (`uid`),
+  UNIQUE KEY `unique_openid` (`openid`),
+  CONSTRAINT `chk_amount_non_negative` CHECK ((`balance` >= 0))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表'
+

@@ -18,13 +18,13 @@
     <view class="order-footer">
       <text class="order-time">
         <text v-if="order.status === 'S'">
-          完成时间：{{ order.completeTime }}
+          完成时间：{{ formatTimeDisplay(order.completeTime) }}
         </text>
         <text v-else-if="order.status === 'C'">
           已取消
         </text>
         <text v-else>
-          期望送达时间：{{ order.expectTime }}
+          期望送达时间：{{ formatTimeDisplay(order.expectTime) }}
         </text>
       </text>
       <view class="order-actions">
@@ -36,6 +36,7 @@
 
 <script lang="ts" setup>
 import { defineProps, defineEmits, computed } from 'vue';
+import { formatTimeDisplay } from '@/utils/date.js';
 
 interface OrderDetail {
   remark?: string;
@@ -94,9 +95,6 @@ const orderDesc = computed(() => {
 
   return '无备注信息';
 });
-
-
-
 
 </script>
 

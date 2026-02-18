@@ -56,10 +56,10 @@ public class OrderController {
     }
 
     /**
-     * 我的订单列表
+     * 订单列表
      */
-    @GetMapping("/list-mine")
-    public R listMyOrders(
+    @GetMapping("/list")
+    public R listOrders(
             @RequestParam("uid") String uid,
             @Nullable @RequestParam("role") String role,
             @Nullable @RequestParam("status") String status,
@@ -67,7 +67,7 @@ public class OrderController {
             @Nullable @RequestParam("pageNum") Integer pageNum,
             @Nullable @RequestParam("pageSize") Integer pageSize
     ) {
-        return orderService.listMyOrders(uid, role, status, type, pageNum, pageSize);
+        return orderService.listOrders(uid, role, status, type, pageNum, pageSize);
     }
 
     /**

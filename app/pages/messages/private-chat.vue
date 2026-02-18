@@ -3,32 +3,32 @@
 		<view :style="{ paddingTop: statusBarHeight + 'px' }" class="chat-header">
 			<u-navbar leftIcon="arrow-left" leftText="返回" :autoBack="true" @leftClick="handleBack">
 				<template #center>
-					<view style="display: flex; align-items: center;">
-						<text>{{ otherUserName }}</text>
-						<u-badge isDot :type="isOnline && isConnected? 'success' : 'error'" style="margin-left: 4px;" />
-					</view>
+					<text class="navbar-name">{{ otherUserName }}</text>
 				</template>
 			</u-navbar>
 		</view>
 
-		<scroll-view class="chat-content" scroll-y :scroll-top="scrollTop" :refresher-triggered="refresherTriggered"
+		<scroll-view class="chat-content" scroll-y :scroll-top="scrollTop" :scroll-into-view="scrollIntoViewId"
+			:refresher-triggered="refresherTriggered"
 			@refresherrefresh="onRefresherRefresh" @scrolltolower="loadMoreMessages" ref="scrollViewRef"
-			:style="{ paddingTop: navbarHeight + 'px' }">
+			:enable-flex="true"
+			:style="{ paddingTop: (statusBarHeight + navbarHeight) + 'px' }">
 
-			<!-- 订单信息 -->
+			<view class="chat-content-inner">
+				<!-- 动态日期分隔线：根据消息时间自动插入 -->
+				<template v-for="(message, index) in messages" :key="message.id">
+					<!-- 只在第一条消息或跨天消息前显示日期 -->
+					<chat-date-divider v-if="index === 0 || !isSameDay(message.createTime, messages[index-1].createTime)"
+						:date="message.createTime" />
 
-			<!-- 动态日期分隔线：根据消息时间自动插入 -->
-			<template v-for="(message, index) in messages" :key="message.id">
-				<!-- 只在第一条消息或跨天消息前显示日期 -->
-				<chat-date-divider v-if="index === 0 || !isSameDay(message.createTime, messages[index-1].createTime)"
-					:date="message.createTime" />
+					<chat-message-bubble :message="message" @showMessageAction="showMessageAction"
+						@resendMessage="resendMessage" @previewImage="previewImage" />
+				</template>
 
-				<chat-message-bubble :message="message" @showMessageAction="showMessageAction"
-					@resendMessage="resendMessage" @previewImage="previewImage" />
-			</template>
-
-			<view class="loading-more" v-if="isLoadingMore">
-				<text>加载更多历史消息...</text>
+				<view class="loading-more" v-if="isLoadingMore">
+					<text>加载更多历史消息...</text>
+				</view>
+				<view id="chat-bottom" class="chat-bottom-anchor"></view>
 			</view>
 		</scroll-view>
 
@@ -46,6 +46,7 @@ import { useUserStore } from '@/stores/user'
 import request from '@/utils/request';
 import { getWebSocketUrl } from '@/config/index.js';
 import { formatMessageTime, formatDate, isSameDay } from '@/utils/tools';
+	import { parseDateSafe } from '@/utils/date.js';
 import ChatMessageBubble from '@/components/chat/message-bubble.vue';
 import ChatInput from '@/components/chat/chat-input.vue';
 import ChatDateDivider from '@/components/chat/date-divider.vue';
@@ -63,7 +64,6 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 	const orderInfo = ref(null);
 
 	const messages = ref([]);
-	const isOnline = ref(true);
 	const isLoadingMore = ref(false);
 	const hasMore = ref(true);
 	const page = ref(1);
@@ -76,6 +76,7 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 	const maxReconnectCount = 5;
 
 	const scrollTop = ref(0);
+	const scrollIntoViewId = ref('');
 	const refresherTriggered = ref(false);
 	const currentMessage = ref(null);
 	const currentMessageIndex = ref(-1);
@@ -86,7 +87,7 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 	const statusBarHeight = ref(0);
 	const navbarHeight = ref(0);
 
-	const defaultAvatar = '/static/images/default-avatar.png';
+	const defaultAvatar = '';
 	const myAvatar = userInfo.avatar;
 
 	let hasInitWebSocket = false;
@@ -191,21 +192,13 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 		}
 	};
 
-	// 格式化消息
+	// 格式化消息（时间用 parseDateSafe 兼容 iOS 的 yyyy-MM-dd HH:mm:ss）
 	const formatMessage = (msg) => {
 		const isMe = msg.sender === userInfo.uid;
 		const messageType = msg.type || 'TEXT';
-		// 处理时间格式，确保是Date对象
-		let msgCreateTime;
-		if (msg.sendTime) {
-			if (typeof msg.sendTime === 'string' && msg.sendTime.includes('T')) {
-				msgCreateTime = new Date(msg.sendTime.replace('T', ' '));
-			} else {
-				msgCreateTime = new Date(msg.sendTime);
-			}
-		} else {
-			msgCreateTime = new Date();
-		}
+		const msgCreateTime = (msg.sendTime instanceof Date)
+			? msg.sendTime
+			: (parseDateSafe(msg.sendTime) || new Date());
 
 		return {
 			id: msg.mid || msg.id,
@@ -278,9 +271,6 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 			case 'TYPING':
 				handleTyping(message);
 				break;
-			case 'ONLINE':
-				handleOnlineStatus(message);
-				break;
 			default:
 				handleChatMessage(message);
 				break;
@@ -347,19 +337,18 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 
 	};
 
-	// 修复滚动到底部功能 - 简单有效的方法
+	// 滚动到底部：先等 DOM 更新再使用 scroll-into-view，消息多时更可靠
 	const scrollToBottom = () => {
-		if (scrollTimer) {
-			clearTimeout(scrollTimer);
-		}
-
+		if (scrollTimer) clearTimeout(scrollTimer);
+		scrollIntoViewId.value = '';
 		scrollTimer = setTimeout(() => {
-			scrollTop.value = 9999999;
-			// 双重保险，再设置一次
-			setTimeout(() => {
-				scrollTop.value = 9999999;
-			}, 50);
-		}, 100);
+			nextTick(() => {
+				scrollIntoViewId.value = 'chat-bottom';
+				scrollTimer = setTimeout(() => {
+					scrollIntoViewId.value = '';
+				}, 300);
+			});
+		}, 80);
 	};
 
 	const sendMessage = async (content) => {
@@ -403,6 +392,15 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 		if (!success) {
 			updateMessageStatus(tempId, 'error');
 			await sendMessageByHttp(content, tempId);
+		} else {
+			// 服务端可能不回显自己发的消息，故乐观地在发送成功后一段时间将状态置为已发送
+			setTimeout(() => {
+				const idx = messages.value.findIndex(m => m.id === tempId);
+				if (idx !== -1 && messages.value[idx].status === 'sending') {
+					messages.value[idx].status = 'sent';
+					messages.value[idx].read = true;
+				}
+			}, 800);
 		}
 	};
 
@@ -601,10 +599,6 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 	const handleTyping = (message) => {
 		console.log('对方正在输入:', message);
 	};
-
-	const handleOnlineStatus = (message) => {
-		isOnline.value = message.online || false;
-	};
 </script>
 
 <style scoped>
@@ -626,14 +620,24 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 		z-index: 1000;
 	}
 
+	.navbar-name {
+		font-size: 34rpx;
+		font-weight: 600;
+		color: #1f2937;
+	}
+
 	.chat-content {
 		flex: 1;
 		background-color: #f5f5f5;
 		overflow-y: auto;
-		padding-bottom: 140rpx;
-		/* 确保内容从导航栏下方开始 */
-		margin-top: 88rpx;
-		/* 导航栏高度，可根据实际情况调整 */
+		padding-bottom: calc(140rpx + env(safe-area-inset-bottom, 0px));
+	}
+
+	.chat-content-inner {
+		width: 100%;
+		box-sizing: border-box;
+		padding-left: 24rpx;
+		padding-right: 24rpx;
 	}
 
 	.loading-more {
@@ -641,5 +645,10 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 		padding: 20rpx;
 		font-size: 28rpx;
 		color: #999;
+	}
+
+	.chat-bottom-anchor {
+		height: 1rpx;
+		width: 100%;
 	}
 </style>

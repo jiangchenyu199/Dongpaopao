@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { defineProps, defineEmits } from 'vue';
+  import { defineProps, defineEmits, withDefaults } from 'vue';
 
   interface UserInfo {
     uid: string;
@@ -20,10 +20,12 @@
     avatar: string;
   }
 
-  const props = defineProps<{
+  const props = withDefaults(defineProps<{
     user: UserInfo;
     clickable?: boolean;
-  }>();
+  }>(), {
+    clickable: true
+  });
 
   const emit = defineEmits<{
     (e: 'click', user: UserInfo): void;
@@ -43,6 +45,8 @@
     padding: 40rpx 30rpx;
     background-color: #fff;
     margin-bottom: 20rpx;
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
   }
 
   .user-avatar {

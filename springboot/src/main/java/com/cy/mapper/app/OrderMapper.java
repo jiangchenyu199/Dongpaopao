@@ -14,6 +14,9 @@ public interface OrderMapper extends BaseMapper<Order> {
 
     Page<JSONObject> getHallOrders(Page<JSONObject> page, @Param("uid") String uid, @Param("orderTypeId") String orderTypeId);
 
+    List<JSONObject> listMyOrders(@Param("uid") String uid, @Param("role") String role,
+                                   @Param("status") String status, @Param("type") String type);
+
     JSONObject detail(@Param("oid") String oid);
 
     

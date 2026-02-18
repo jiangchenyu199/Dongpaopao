@@ -1,22 +1,37 @@
 <template>
 	<view class="order-detail-page">
-		<view class="detail-content">
-			<!-- 订单状态卡片 -->
-			<view class="status-card">
-				<view class="status-info">
-					<!-- 直接使用后端返回的状态名称 -->
-					<text class="status-text">{{ orderDetail.status_name || '未知状态' }}</text>
-					<text class="order-type">{{ orderDetail.service_name || '未知服务' }}</text>
-				</view>
-				<view class="order-id">订单号：{{ orderDetail.oid }}</view>
-			</view>
+		<!-- 自定义导航栏：状态 + 服务 + 订单号 -->
+		<view class="detail-navbar-wrap" :style="{ borderBottomColor: statusBorderColor }">
+			<u-navbar
+				:title="''"
+				leftIcon="arrow-left"
+				leftText="返回"
+				:autoBack="true"
+				:fixed="true"
+				:placeholder="true"
+				:border="false"
+				:height="navbarContentHeight"
+				bgColor="#fff"
+			>
+				<template #center>
+					<view class="navbar-center">
+						<view class="navbar-row">
+							<u-tag :text="orderDetail.status_name || '未知状态'" :type="statusTagType" size="mini" />
+							<text class="navbar-service">{{ orderDetail.service_name || '未知服务' }}</text>
+						</view>
+						<text class="navbar-oid" v-if="orderDetail.oid">订单号：{{ orderDetail.oid }}</text>
+					</view>
+				</template>
+			</u-navbar>
+		</view>
 
+		<view class="detail-content">
 			<!-- 订单基本信息 -->
 			<view class="info-card">
-				<view class="card-title">订单信息</view>
+				<u-title>订单信息</u-title>
 				<view class="info-item">
 					<text class="label">下单时间</text>
-					<text class="value">{{ formatTime(orderDetail.create_time) }}</text>
+					<text class="value">{{ formatTimeDisplay(orderDetail.create_time) }}</text>
 				</view>
 				<view class="info-item">
 					<text class="label">订单金额</text>
@@ -24,15 +39,15 @@
 				</view>
 				<view class="info-item" v-if="orderDetail.accept_time">
 					<text class="label">接单时间</text>
-					<text class="value">{{ formatTime(orderDetail.accept_time) }}</text>
+					<text class="value">{{ formatTimeDisplay(orderDetail.accept_time) }}</text>
 				</view>
 				<view class="info-item" v-if="orderDetail.complete_time">
 					<text class="label">完成时间</text>
-					<text class="value">{{ formatTime(orderDetail.complete_time) }}</text>
+					<text class="value">{{ formatTimeDisplay(orderDetail.complete_time) }}</text>
 				</view>
 				<view class="info-item" v-if="orderDetail.expect_time">
 					<text class="label">期望送达时间</text>
-					<text class="value">{{ formatTime(orderDetail.expect_time) }}</text>
+					<text class="value">{{ formatTimeDisplay(orderDetail.expect_time) }}</text>
 				</view>
 				<view class="info-item" v-if="orderDetail.service_name">
 					<text class="label">服务类型</text>
@@ -42,7 +57,7 @@
 
 			<!-- 动态表单业务详情信息 -->
 			<view class="info-card" v-if="formList.length > 0 && Object.keys(businessDetail).length > 0">
-				<view class="card-title">{{ orderDetail.service_name || '服务' }}详情</view>
+				<u-title>{{ orderDetail.service_name || '服务' }}详情</u-title>
 				<!-- 动态渲染表单数据 -->
 				<view class="info-item" v-for="(item, index) in formList" :key="index">
 					<text class="label">{{ item.label }}</text>
@@ -56,7 +71,7 @@
 
 			<!-- 配送信息 -->
 			<view class="info-card" v-if="addressInfo">
-				<view class="card-title">配送信息</view>
+				<u-title>配送信息</u-title>
 				<view class="info-item">
 					<text class="label">收件人</text>
 					<text class="value">{{ addressInfo.sjr }}</text>
@@ -94,6 +109,7 @@
 	import { onLoad } from '@dcloudio/uni-app'
 	import request from '@/utils/request.js'
 	import { useUserStore } from '@/stores/user';
+	import { formatTimeDisplay } from '@/utils/date.js';
 
 	const loading = ref(false);
 	const acceptLoading = ref(false);
@@ -133,9 +149,22 @@
 
 	// 是否显示敏感信息（私密字段，如取餐码、取件码）
 	const showSensitiveInfo = computed(() => {
-		// 状态为进行中、已完成时显示，或当前用户是下单人（可根据业务需求调整）
 		return ['J', 'S'].includes(orderDetail.value.status) || orderDetail.value.xdr === userInfo.uid;
 	});
+
+	// 状态标签类型：D 待接单 warning，J 进行中 primary，S 已完成 success，C 已取消 error
+	const statusTagType = computed(() => {
+		const map = { D: 'warning', J: 'primary', S: 'success', C: 'error' };
+		return map[orderDetail.value.status] || 'info';
+	});
+
+	// 导航栏底部线条颜色（随状态）
+	const statusBorderColor = computed(() => {
+		const map = { D: '#f59e0b', J: '#3b82f6', S: '#22c55e', C: '#ef4444' };
+		return map[orderDetail.value.status] || '#94a3b8';
+	});
+
+	const navbarContentHeight = 56;
 
 	onLoad((options) => {
 		const { oid } = options;
@@ -204,13 +233,6 @@
 		} finally {
 			loading.value = false;
 		}
-	};
-
-	// 格式化时间
-	const formatTime = (time: any) => {
-		if (!time) return '-';
-		const date = new Date(time);
-		return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 	};
 
 	// 接单操作
@@ -384,14 +406,16 @@
 	// 私聊
 	const goToPrivateChat = (cid) => {
 		if (!cid) {
-			uni.showToast({
-				title: '会话ID不存在',
-				icon: 'none'
-			});
+			uni.showToast({ title: '会话ID不存在', icon: 'none' });
 			return;
 		}
+		const od = orderDetail.value;
+		const otherUid = userInfo.uid === od.xdr ? od.jdr : od.xdr;
+		const otherName = od.other_user_name || od.otherUserNickname || '用户';
+		const otherAvatar = od.other_user_avatar || od.otherUserAvatar || '';
+		const q = (k, v) => `${k}=${encodeURIComponent(v || '')}`;
 		uni.navigateTo({
-			url: `/pages/messages/private-chat/private-chat?cid=${cid}`
+			url: `/pages/messages/private-chat?${q('conversationId', cid)}&${q('otherUserId', otherUid)}&${q('otherUserName', otherName)}&${q('otherUserAvatar', otherAvatar)}&${q('orderId', od.oid)}`
 		});
 	};
 </script>
@@ -399,87 +423,93 @@
 <style scoped>
 	.order-detail-page {
 		min-height: 100vh;
-		background-color: #f5f5f5;
+		background-color: #f0f2f5;
+		padding-bottom: 200rpx;
+	}
+
+	.detail-navbar-wrap {
+		position: relative;
+		border-bottom: 3rpx solid;
+	}
+
+	.navbar-center {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 4rpx;
+		min-height: 56px;
+	}
+
+	.navbar-row {
+		display: flex;
+		align-items: center;
+		gap: 12rpx;
+	}
+
+	.navbar-service {
+		font-size: 28rpx;
+		font-weight: 600;
+		color: #1f2937;
+	}
+
+	.navbar-oid {
+		font-size: 22rpx;
+		color: #6b7280;
 	}
 
 	.detail-content {
-		padding: 20rpx;
-	}
-
-	.status-card {
-		background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-		border-radius: 16rpx;
-		padding: 40rpx 30rpx;
-		color: white;
-		margin-bottom: 20rpx;
-	}
-
-	.status-info {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 20rpx;
-	}
-
-	.status-text {
-		font-size: 36rpx;
-		font-weight: bold;
-	}
-
-	.order-type {
-		font-size: 28rpx;
-		background: rgba(255, 255, 255, 0.2);
-		padding: 8rpx 16rpx;
-		border-radius: 20rpx;
-	}
-
-	.order-id {
-		font-size: 26rpx;
-		opacity: 0.9;
+		padding: 24rpx;
 	}
 
 	.info-card {
 		background-color: #fff;
-		border-radius: 16rpx;
-		padding: 30rpx;
-		margin-bottom: 20rpx;
-		box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+		border-radius: 20rpx;
+		padding: 32rpx 28rpx;
+		margin-bottom: 24rpx;
+		box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.06);
 	}
 
-	.card-title {
-		font-size: 32rpx;
-		font-weight: bold;
-		color: #333;
-		margin-bottom: 30rpx;
-		padding-bottom: 20rpx;
-		border-bottom: 1rpx solid #eee;
+	.info-card :deep(.u-title) {
+		margin-bottom: 28rpx;
+		display: block;
 	}
 
 	.info-item {
 		display: flex;
 		justify-content: space-between;
 		align-items: flex-start;
-		margin-bottom: 24rpx;
+		padding: 20rpx 0;
+		border-bottom: 1rpx solid #f5f5f5;
+		min-height: 44rpx;
+	}
+
+	.info-item:last-child {
+		border-bottom: none;
+		padding-bottom: 0;
 	}
 
 	.label {
 		font-size: 28rpx;
-		color: #666;
+		color: #6b7280;
 		flex-shrink: 0;
 		width: 200rpx;
+		line-height: 1.5;
 	}
 
 	.value {
 		font-size: 28rpx;
-		color: #333;
+		color: #1f2937;
 		flex: 1;
 		text-align: right;
 		word-break: break-all;
+		line-height: 1.5;
 	}
 
 	.value.price {
-		color: #1a73e8;
-		font-weight: bold;
+		color: #dc2626;
+		font-weight: 700;
+		font-size: 32rpx;
 	}
 
 	.value.link {
@@ -488,12 +518,16 @@
 	}
 
 	.action-buttons {
-		padding: 30rpx 20rpx;
+		padding: 28rpx 24rpx;
+		padding-bottom: calc(28rpx + env(safe-area-inset-bottom, 0));
 		background-color: #fff;
-		position: sticky;
+		position: fixed;
+		left: 0;
+		right: 0;
 		bottom: 0;
 		display: flex;
-		flex-direction: column;
+		flex-wrap: wrap;
 		gap: 20rpx;
+		box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
 	}
 </style>

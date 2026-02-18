@@ -1,6 +1,10 @@
 <template>
 	<view class="checkout-container">
 		<view class="checkout-content">
+			<view class="total-info">
+				<text class="label">合计</text>
+				<text class="value">¥{{ totalAmount }}</text>
+			</view>
 			<u-button type="primary" size="large" @click="handleSubmit" class="submit-btn">
 				确认下单
 			</u-button>
@@ -16,6 +20,7 @@
 	}>();
 	
 	const props = defineProps<{
+		totalAmount: string
 	}>();
 	
 	const handleSubmit = () => {
@@ -38,12 +43,29 @@
 	
 	.checkout-content {
 		display: flex;
-		justify-content: center;
+		justify-content: space-between;
 		align-items: center;
 	}
 	
+	.total-info {
+		flex: 1;
+		margin-right: 20rpx;
+	}
+	
+	.label {
+		font-size: 24rpx;
+		color: #666;
+		margin-right: 8rpx;
+	}
+	
+	.value {
+		font-size: 32rpx;
+		font-weight: bold;
+		color: #ff6600;
+	}
+	
 	.submit-btn {
-		width: 100%;
+		flex: 2;
 		height: 40rpx;
 		font-size: 32rpx;
 		font-weight: bold;

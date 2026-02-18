@@ -28,7 +28,10 @@
 			"path": "pages/user/orders/my-orders"
 		},
 		{
-			"path": "pages/common/order-detail/order-detail"
+			"path": "pages/common/order-detail/order-detail",
+			"style": {
+				"navigationStyle": "custom"
+			}
 		},
 		{
 			"path": "pages/messages/private-chat",
@@ -41,6 +44,12 @@
 		},
         {
             "path": "pages/user/wallet"
+		},
+		{
+			"path": "pages/user/cooperation/cooperation",
+			"style": {
+				"navigationBarTitleText": "商务合作"
+			}
 		}
 	],
 	"globalStyle": {

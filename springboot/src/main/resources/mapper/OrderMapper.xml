@@ -20,8 +20,40 @@
         ORDER BY o.create_time DESC
     </select>
 
+    <select id="listMyOrders" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT o.oid, o.xdr, o.jdr, o.create_time AS createTime, o.expect_time AS expectTime,
+               o.order_type_id AS orderTypeId, o.aid, o.detail, o.amount,
+               o.accept_time AS acceptTime, o.complete_time AS completeTime,
+               o.status, o.rating,
+               order_status.description AS statusName, order_status.color AS statusColor,
+               order_type.type_name AS typeName
+        FROM `order` o
+        LEFT JOIN order_status ON o.status = order_status.status
+        LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
+        <where>
+            <choose>
+                <when test="role == 'xdr'">
+                    o.xdr = #{uid}
+                </when>
+                <when test="role == 'jdr'">
+                    o.jdr = #{uid}
+                </when>
+                <otherwise>
+                    (o.xdr = #{uid} OR o.jdr = #{uid})
+                </otherwise>
+            </choose>
+            <if test="status != null and status != ''">
+                AND o.status = #{status}
+            </if>
+            <if test="type != null and type != ''">
+                AND o.order_type_id = #{type}
+            </if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+
     <select id="detail" resultType="com.alibaba.fastjson2.JSONObject">
-        SELECT o.*, order_type.form, order_type.type_name, status.description AS status_name
+        SELECT o.*, order_type.form, order_type.type_name AS service_name, status.description AS status_name
         FROM `order` as o
         LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
         LEFT JOIN order_status AS status ON o.status = status.status
