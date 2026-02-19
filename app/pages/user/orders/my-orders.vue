@@ -196,7 +196,7 @@
 
 <script lang="ts" setup>
 	import { ref, computed } from 'vue';
-	import { onLoad, onPullDownRefresh } from '@dcloudio/uni-app'
+	import { onShow, onPullDownRefresh } from '@dcloudio/uni-app'
 	import request from '@/utils/request.js'
 	import { useUserStore } from '@/stores/user.js'
 	import { formatTimeDisplay } from '@/utils/date.js'
@@ -442,7 +442,7 @@
 	// 跳转到订单详情页
 	const navigateToDetail = (order) => {
 		uni.navigateTo({
-			url: `/pages/common/order-detail/order-detail?oid=${order.oid}&orderTypeId=${order.orderTypeId || order.orderType || ''}`
+			url: `/pages/user/orders/order-detail?oid=${order.oid}&orderTypeId=${order.orderTypeId || order.orderType || ''}`
 		});
 	};
 
@@ -460,8 +460,8 @@
 		});
 	};
 
-	// 页面显示时加载数据
-	onLoad(() => {
+	// 每次显示页面时拉取列表（首次进入、从详情/大厅返回、从后台切回）
+	onShow(() => {
 		loadOrders();
 	});
 

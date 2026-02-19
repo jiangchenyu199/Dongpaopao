@@ -176,7 +176,7 @@
 	const navigateToDetail = (order : any) => {
 		const orderType = order.order_type || order.inferredType || order.orderType;
 		uni.navigateTo({
-			url: `/pages/common/order-detail/order-detail?oid=${order.oid}&orderType=${orderType}`
+			url: `/pages/user/orders/order-detail?oid=${order.oid}&orderType=${orderType}`
 		});
 	};
 

@@ -35,7 +35,7 @@
 			"path": "pages/user/orders/my-orders"
 		},
 		{
-			"path": "pages/common/order-detail/order-detail",
+			"path": "pages/user/orders/order-detail",
 			"style": {
 				"navigationStyle": "custom"
 			}
