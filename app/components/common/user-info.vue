@@ -1,13 +1,11 @@
 <template>
-  <view class="user-info" @click="handleClick" :style="{ cursor: clickable ? 'pointer' : 'default' }">
-    <view class="user-avatar">
-      <u-avatar size="60" class="avatar-image" :src="user.avatar" mode="aspectFill"/>
+  <view class="user-info user-info--card" @click="handleClick" :style="{ cursor: clickable ? 'pointer' : 'default' }">
+    <view class="user-info__avatar-wrap">
+      <u-avatar size="120" class="user-info__avatar" :src="user.avatar" mode="aspectFill"/>
     </view>
-    <view class="user-detail">
-      <text class="user-name">{{ user.nickname }}</text>
-      <text class="user-id">{{ user.uid }}</text>
-    </view>
-    <uni-icons v-if="clickable" type="arrowright" size="20" color="#999"/>
+    <text class="user-info__name">{{ user.nickname }}</text>
+    <text class="user-info__uid">ID {{ user.uid }}</text>
+    <uni-icons v-if="clickable" class="user-info__arrow" type="arrowright" size="18" color="#999"/>
   </view>
 </template>
 
@@ -40,44 +38,49 @@
 
 <style scoped>
   .user-info {
-    display: flex;
-    align-items: center;
-    padding: 40rpx 30rpx;
-    background-color: #fff;
-    margin-bottom: 20rpx;
     -webkit-tap-highlight-color: transparent;
     tap-highlight-color: transparent;
   }
 
-  .user-avatar {
-    width: 120rpx;
-    height: 120rpx;
-    margin-right: 30rpx;
-    flex-shrink: 0;
+  .user-info--card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48rpx 32rpx 40rpx;
+    margin: 20rpx 20rpx 24rpx;
+    background-color: #fff;
+    border-radius: 20rpx;
+    position: relative;
   }
 
-  .avatar-image {
-    width: 100%;
-    height: 100%;
+  .user-info__avatar-wrap {
+    margin-bottom: 24rpx;
+  }
+
+  .user-info__avatar {
+    width: 120rpx;
+    height: 120rpx;
     border-radius: 50%;
     background-color: #f0f0f0;
   }
 
-  .user-detail {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .user-name {
-    font-size: 32rpx;
+  .user-info__name {
+    font-size: 36rpx;
     font-weight: bold;
-    color: #333;
-    margin-bottom: 10rpx;
+    color: #1a1a1a;
+    margin-bottom: 8rpx;
   }
 
-  .user-id {
+  .user-info__uid {
     font-size: 24rpx;
     color: #999;
+    margin-bottom: 16rpx;
+  }
+
+  .user-info__arrow {
+    position: absolute;
+    right: 24rpx;
+    top: 50%;
+    transform: translateY(-50%);
   }
 </style>

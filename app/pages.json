@@ -16,11 +16,18 @@
 			}
 		},
 		{
-			"path": "pages/user/user"
+			"path": "pages/user/user",
+			"style": {
+				"navigationStyle": "custom"
+			}
 		},
 		{
-			"path": "pages/user/profile/profile"
+			"path": "pages/user/profile/profile",
+			"style": {
+				"navigationBarTitleText": "个人资料"
+			}
 		},
+		// user: 自定义导航栏；profile: 标题
 		{
 			"path": "pages/user/address/address"
 		},

@@ -1,199 +1,261 @@
 <template>
-	<view class="page-container">
-		<!-- 用户信息编辑区域 -->
-		<view class="edit-container">
-			<view class="edit-content">
-				<view class="avatar-edit">
-					<u-avatar class="avatar-image" size="100" :src="userInfo.avatar" mode="aspectFill"/>
-					<button class="avatar-edit-text" open-type="chooseAvatar" @chooseavatar="changeAvatar">更换头像</button>
-				</view>
+	<view class="profile-page">
+		<!-- 头像区 -->
+		<view class="profile-avatar-card">
+			<u-avatar class="profile-avatar" size="120" :src="userInfo.avatar" mode="aspectFill" />
+			<button class="profile-avatar-btn" open-type="chooseAvatar" @chooseavatar="changeAvatar">更换头像</button>
+		</view>
 
-				<view class="form-item">
-					<text class="form-label">昵称</text>
-					<input type="nickname" class="form-input" v-model="userInfo.nickname" placeholder="请输入昵称" />
-				</view>
-
-				<view class="form-item">
-					<text class="form-label">ID</text>
-					<text class="form-value">{{ userInfo.uid }}</text>
-				</view>
-
-				<view class="form-item">
-					<text class="form-label">性别</text>
-					<picker class="form-picker" mode="selector" :range="genderOptions" :value="genderIndex"
-						@change="genderChange">
-						<view>{{ genderOptions[genderIndex] }}</view>
-					</picker>
-				</view>
-
-				<view class="form-item">
-					<text class="form-label">学校</text>
-					<picker :range="schoolList" :range-key="'sname'" :index="schoolIndex">
-						<view>{{ schoolList[schoolIndex].sname }}</view>
-					</picker>
-					<!-- <input class="form-input" v-model="userInfo.sid" placeholder="请选择学校" /> -->
-				</view>
-
-				<view class="form-item">
-					<text class="form-label">手机号</text>
-					<input class="form-input" v-model="userInfo.phone" placeholder="请授权手机号" disabled />
-					<button open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">授权手机号</button>
-				</view>
-
-				<!-- 保存 -->
-				<button type="primary" class="save-button" @click="saveInfo">保存修改</button>
+		<!-- 基本信息 -->
+		<view class="profile-card">
+			<view class="profile-row">
+				<text class="profile-label">昵称</text>
+				<input class="profile-input" v-model="userInfo.nickname" placeholder="请输入昵称"
+					placeholder-class="profile-placeholder" />
+			</view>
+			<view class="profile-row profile-row--readonly">
+				<text class="profile-label">ID</text>
+				<text class="profile-value">{{ userInfo.uid }}</text>
+			</view>
+			<view class="profile-row">
+				<text class="profile-label">性别</text>
+				<picker class="profile-picker" mode="selector" :range="genderOptions" range-key="text"
+					:value="genderIndex" @change="genderChange">
+					<view class="profile-picker-value">{{ genderOptions[genderIndex]?.text }}</view>
+				</picker>
+				<u-icon name="arrow-right" size="14" color="#999" />
+			</view>
+			<view class="profile-row">
+				<text class="profile-label">学校</text>
+				<picker class="profile-picker" mode="selector" :range="schoolList" range-key="sname"
+					:value="schoolIndex" @change="schoolChange">
+					<view class="profile-picker-value">{{ schoolList[schoolIndex]?.sname || '请选择' }}</view>
+				</picker>
+				<u-icon name="arrow-right" size="14" color="#999" />
 			</view>
 		</view>
+
+		<!-- 账号安全 -->
+		<view class="profile-card">
+			<view class="profile-row profile-row--readonly">
+				<text class="profile-label">手机号</text>
+				<text v-if="userInfo.phone" class="profile-value">{{ userInfo.phone }}</text>
+				<button v-else class="profile-auth-btn" open-type="getPhoneNumber"
+					@getphonenumber="getPhoneNumber">授权手机号</button>
+			</view>
+		</view>
+
+		<view class="profile-actions">
+			<u-button type="primary" text="保存修改" customStyle="height: 96rpx; font-size: 32rpx; border-radius: 12rpx;"
+				@click="saveInfo" />
+		</view>
+
 	</view>
 </template>
+
 <script lang="ts" setup>
-	import { reactive, ref } from 'vue';
-	import { useUserStore } from '@/stores/user';
-	import { onLoad } from '@dcloudio/uni-app'
-	import request from '@/utils/request';
+import { ref } from 'vue';
+import { useUserStore } from '@/stores/user';
+import { onLoad } from '@dcloudio/uni-app';
+import request from '@/utils/request';
 
-	onLoad(() => {
-		// 加载学校列表
-		request({
-			url: "/school/list"
-		}).then((res) => {
-			schoolList.value = res.data
-		})
-	})
+const userStore = useUserStore();
+const userInfo = userStore.info;
 
-	const userStore = useUserStore()
+const genderOptions = [
+	{ text: '男', value: 1 },
+	{ text: '女', value: 0 },
+	{ text: '保密', value: -1 }
+];
+const genderIndex = ref(0);
 
-	const userInfo = userStore.info
+const schoolList = ref<{ sid?: string; sname: string }[]>([{ sname: '加载中...' }]);
+const schoolIndex = ref(0);
 
-	// 性别picker
-	const genderOptions = ref(['男', '女', '保密'])
-	const genderIndex = ref(0);
+function genderChange(e: any) {
+	genderIndex.value = Number(e.detail.value) || 0;
+}
 
-	const genderChange = (e : any) => {
-		genderIndex.value = e.detail.value;
-	};
+function schoolChange(e: any) {
+	schoolIndex.value = Number(e.detail.value) || 0;
+}
 
-	// 学校picker
-	const schoolList = ref([{}])
-	const schoolIndex = ref(0)
+onLoad(() => {
+	request({ url: '/school/list' }).then((res: any) => {
+		schoolList.value = res.data || [];
+		const sid = userInfo.sid;
+		if (sid && schoolList.value.length) {
+			const i = schoolList.value.findIndex((s: any) => String(s.sid) === String(sid));
+			if (i >= 0) schoolIndex.value = i;
+		}
+	});
+	const gNum = typeof userInfo.sex === 'number' ? userInfo.sex : Number(userInfo.sex);
+	const gi = genderOptions.findIndex((o) => o.value === gNum);
+	if (gi >= 0) genderIndex.value = gi;
+});
 
-	// 更新头像的回调函数
-	const changeAvatar = (res) => {
+function changeAvatar(res: any) {
+	const tempAvatarUrl = res.detail?.avatarUrl;
+	if (!tempAvatarUrl) return;
+	uni.uploadFile({
+		url: 'https://localhost:8181/api/user/avatar?uid=' + userInfo.uid,
+		filePath: tempAvatarUrl,
+		name: 'file',
+		success(res) {
+			uni.showToast({ title: '上传成功', icon: 'none' });
+			try {
+				const data = JSON.parse((res as any).data);
+				userInfo.avatar = (data.data || '') + '?t=' + Date.now();
+			} catch (_) { }
+		}
+	});
+}
 
-		const tempAvatarUrl = res.detail.avatarUrl
+function getPhoneNumber(res: any) {
+	const code = res.detail?.code;
+	if (!code) return;
+	request({ url: '/auth/getPhoneNumber?code=' + code + '&uid=' + userInfo.uid }).then((r: any) => {
+		if (r.data) userInfo.phone = r.data;
+	});
+}
 
-		uni.uploadFile({
-			url: "https://localhost:8181/api/user/avatar?uid=" + userInfo.uid,
-			filePath: tempAvatarUrl,
-			name: "file",
-			success(res) {
-				uni.showToast({
-					title: "上传头像成功!",
-					icon: 'none',
-				})
-				// 
-				userInfo.avatar = JSON.parse(res.data).data + "?t=" + Date.now()
+function saveInfo() {
+	const school = schoolList.value[schoolIndex.value];
+	request({
+		url: '/user/update',
+		method: 'PUT',
+		data: {
+			user: {
+				...userInfo,
+				sex: genderOptions[genderIndex.value].value,
+				sid: school?.sid
 			}
-		})
-	};
-
-	const getPhoneNumber = (res) => {
-		const code = res.detail.code
-		request({
-			url: "/auth/getPhoneNumber?code=" + code + "&uid=" + userInfo.uid,
-		}).then((res) => {
-			userInfo.phone = res.data
-		})
-	}
-
-	const saveInfo = () => {
-		request({
-			url: "/user/update",
-			data: {
-				user: userInfo
-			},
-			method: "PUT"
-		})
-		uni.showToast({
-			title: '保存成功',
-			icon: 'success'
-		});
-		setTimeout(() => {
-			uni.navigateBack();
-		}, 1500);
-	};
+		}
+	}).then(() => {
+		uni.showToast({ title: '保存成功', icon: 'success' });
+		setTimeout(() => uni.navigateBack(), 1200);
+	});
+}
 </script>
-<style>
-	page {
-		height: 100%;
-		background-color: #f5f5f5;
-	}
 
-	.page-container {
-		height: 100%;
-	}
+<style scoped>
+.profile-page {
+	min-height: 100vh;
+	background-color: #f5f5f5;
+	padding: 24rpx 20rpx 48rpx;
+}
 
-	.edit-container {
-		background-color: #fff;
-		min-height: 100%;
-	}
+.profile-avatar-card {
+	background-color: #fff;
+	border-radius: 20rpx;
+	padding: 48rpx;
+	margin-bottom: 24rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
 
+.profile-avatar {
+	width: 120rpx;
+	height: 120rpx;
+	border-radius: 50%;
+	background-color: #f0f0f0;
+}
 
-	.edit-content {
-		padding: 0 30rpx;
-	}
+.profile-avatar-btn {
+	margin-top: 24rpx;
+	font-size: 28rpx;
+	color: #1a73e8;
+	background: none;
+	border: none;
+	padding: 0;
+	line-height: 1.4;
+}
 
-	.avatar-edit {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		padding: 40rpx 0;
-	}
+.profile-avatar-btn::after {
+	border: none;
+}
 
-	.avatar-image {
-		width: 160rpx;
-		height: 160rpx;
-		border-radius: 50%;
-	}
+.profile-card {
+	background-color: #fff;
+	border-radius: 20rpx;
+	margin-bottom: 24rpx;
+	overflow: hidden;
+}
 
-	.avatar-edit-text {
-		font-size: 28rpx;
-		color: #1a73e8;
-		margin-top: 20rpx;
-	}
+.profile-row {
+	display: flex;
+	align-items: center;
+	padding: 32rpx 28rpx;
+	border-bottom: 1rpx solid #f5f5f5;
+}
 
-	.form-item {
-		display: flex;
-		align-items: center;
-		padding: 30rpx 0;
-		border-bottom: 1rpx solid #f0f0f0;
-	}
+.profile-row:last-child {
+	border-bottom: none;
+}
 
-	.form-label {
-		width: 150rpx;
-		font-size: 28rpx;
-		color: #666;
-	}
+.profile-row--readonly .profile-value {
+	color: #999;
+}
 
-	.form-input {
-		flex: 1;
-		font-size: 28rpx;
-		color: #333;
-	}
+.profile-row--clickable {
+	position: relative;
+}
 
-	.form-value {
-		flex: 1;
-		font-size: 28rpx;
-		color: #999;
-	}
+.profile-label {
+	width: 140rpx;
+	flex-shrink: 0;
+	font-size: 28rpx;
+	color: #333;
+}
 
-	.form-picker {
-		flex: 1;
-		font-size: 28rpx;
-		color: #333;
-	}
+.profile-input {
+	flex: 1;
+	font-size: 28rpx;
+	color: #1a1a1a;
+	text-align: right;
+}
 
-	.save-button {
-		margin-top: 5%;
-	}
+.profile-placeholder {
+	color: #bbb;
+}
+
+.profile-value {
+	flex: 1;
+	font-size: 28rpx;
+	color: #1a1a1a;
+	text-align: right;
+}
+
+.profile-picker {
+	flex: 1;
+	text-align: right;
+}
+
+.profile-picker-value {
+	font-size: 28rpx;
+	color: #1a1a1a;
+}
+
+.profile-auth-btn {
+	flex: 1;
+	font-size: 28rpx;
+	color: #1a73e8;
+	background: none;
+	border: none;
+	padding: 0;
+	text-align: right;
+}
+
+.profile-auth-btn::after {
+	border: none;
+}
+
+.profile-actions {
+	padding: 24rpx 0 0;
+}
+
+.profile-actions .u-button {
+	width: 100%;
+}
 </style>
