@@ -43,11 +43,15 @@
 						loadingText.value = "当前网络不通畅，请稍后重试"
 					}
 				}).then((res) => {
-					user.setUserInfo(res.data)
-					// 成功则进入到主页
-					uni.switchTab({
-						url: "/pages/index/index"
-					})
+					if (res.errCode === 0) {
+						user.setUserInfo(res.data)
+						uni.switchTab({
+							url: "/pages/index/index"
+						})
+					} else {
+						// errCode 11 等错误：request.js 已 showToast，此处更新加载文案
+						loadingText.value = res.msg || '登录失败，请重试'
+					}
 				})
 			}
 		})

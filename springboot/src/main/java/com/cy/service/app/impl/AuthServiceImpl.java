@@ -57,12 +57,17 @@ public class AuthServiceImpl implements AuthService {
 
         User theUser = userMapper.selectOne(
                 new LambdaQueryWrapper<User>()
-                        .select(User::getUid, User::getNickname, User::getSex, User::getSid, User::getAvatar, User::getPhone, User::getAvatar, User::getCtime)
+                        .select(User::getUid, User::getNickname, User::getSex, User::getSid, User::getAvatar, User::getPhone, User::getCtime, User::getStatus)
                         .eq(User::getOpenid, openid));
 
         /* 没有用户则创建一条记录 */
         if (theUser == null) {
             theUser = createUserByOpenid(openid);
+        }
+
+        /* 账号已禁用 */
+        if (theUser.getStatus() != null && theUser.getStatus() == 0) {
+            return R.error("账号已被禁用");
         }
 
         final String sessionKey = jsonObject.getString("session_key");

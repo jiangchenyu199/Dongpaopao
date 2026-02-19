@@ -22,7 +22,8 @@ function request(options) {
 			success: (res) => {
 				if (res.data && res.data.errCode === 11) {
 					uni.showToast({
-						title: res.msg
+						title: res.data.msg || '操作失败',
+						icon: 'none'
 					})
 				}
 				resolve(res.data)

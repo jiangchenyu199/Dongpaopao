@@ -157,6 +157,7 @@ CREATE TABLE `user` (
   `avatar` longtext COMMENT '头像url',
   `ctime` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
   `balance` decimal(10,2) DEFAULT '0.00' COMMENT '余额',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0禁用 1正常',
   PRIMARY KEY (`uid`),
   UNIQUE KEY `unique_uid` (`uid`),
   UNIQUE KEY `unique_openid` (`openid`),

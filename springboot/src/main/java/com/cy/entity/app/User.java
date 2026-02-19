@@ -36,4 +36,7 @@ public class User {
     private LocalDateTime ctime;
 
     private BigDecimal balance;
+
+    /** 0禁用 1正常 */
+    private Integer status;
 }
