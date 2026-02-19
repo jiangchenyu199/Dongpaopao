@@ -86,6 +86,44 @@
 				</view>
 			</view>
 
+			<!-- 订单评价：仅已完成且当前用户为下单人时展示 -->
+			<view class="info-card" v-if="showRatingSection">
+				<u-title>订单评价</u-title>
+				<view class="rating-row">
+					<text class="label">服务评分</text>
+					<view class="rating-wrap">
+						<d-rate
+							v-if="isRated"
+							:modelValue="displayRating"
+							:count="5"
+							:disabled="true"
+							activeColor="#ff9900"
+							inactiveColor="#e5e7eb"
+							:size="20"
+						/>
+						<template v-else>
+							<d-rate
+								v-model="rateValue"
+								:count="5"
+								activeColor="#ff9900"
+								inactiveColor="#e5e7eb"
+								:size="20"
+							/>
+							<u-button
+								class="rating-submit-btn"
+								type="primary"
+								size="small"
+								:loading="rateLoading"
+								:disabled="rateValue <= 0"
+								@click="submitRating"
+							>
+								提交评价
+							</u-button>
+						</template>
+					</view>
+				</view>
+			</view>
+
 			<!-- 操作按钮 -->
 			<view class="action-buttons" v-if="showActionButtons">
 				<u-button v-if="orderDetail.status === 'J'" type="success" shape="circle"
@@ -110,11 +148,14 @@
 	import request from '@/utils/request.js'
 	import { useUserStore } from '@/stores/user';
 	import { formatTimeDisplay } from '@/utils/date.js';
+	import DRate from '@/components/common/d-rate.vue';
 
 	const loading = ref(false);
 	const acceptLoading = ref(false);
 	const completeLoading = ref(false);
 	const cancelLoading = ref(false);
+	const rateLoading = ref(false);
+	const rateValue = ref(0);
 
 	const userInfo = useUserStore().info
 
@@ -135,7 +176,8 @@
 		jdr: '', // 接单者ID
 		form: '', // 表单结构JSON字符串
 		service_name: '', // 服务名称（如快递代取、外卖代取）
-		description: ''
+		description: '',
+		rating: null // 评分 0~5，仅已完成订单可能有值
 	});
 	const businessDetail = ref({}); // 解析后的表单数据
 	const formList = ref([]); // 解析后的表单结构数组
@@ -163,6 +205,16 @@
 		const map = { D: '#f59e0b', J: '#3b82f6', S: '#22c55e', C: '#ef4444' };
 		return map[orderDetail.value.status] || '#94a3b8';
 	});
+
+	// 仅已完成且当前用户为下单人时显示评价区域
+	const showRatingSection = computed(() => {
+		return orderDetail.value.status === 'S' && orderDetail.value.xdr === userInfo.uid;
+	});
+	const isRated = computed(() => {
+		const r = orderDetail.value.rating;
+		return r != null && Number(r) > 0;
+	});
+	const displayRating = computed(() => Number(orderDetail.value.rating) || 0);
 
 	const navbarContentHeight = 56;
 
@@ -403,6 +455,29 @@
 		}
 	};
 
+	// 提交订单评价（PUT /order/rate）
+	const submitRating = async () => {
+		if (rateLoading.value || rateValue.value <= 0) return;
+		rateLoading.value = true;
+		try {
+			const res = await request({
+				url: '/order/rate',
+				method: 'PUT',
+				data: { oid: orderDetail.value.oid, rating: rateValue.value }
+			});
+			if (res.errCode === 0) {
+				orderDetail.value.rating = rateValue.value;
+				uni.showToast({ title: '评价成功', icon: 'success' });
+			} else {
+				uni.showToast({ title: res.msg || '评价失败', icon: 'none' });
+			}
+		} catch (e) {
+			uni.showToast({ title: '评价失败', icon: 'none' });
+		} finally {
+			rateLoading.value = false;
+		}
+	};
+
 	// 私聊
 	const goToPrivateChat = (cid) => {
 		if (!cid) {
@@ -487,6 +562,24 @@
 	.info-item:last-child {
 		border-bottom: none;
 		padding-bottom: 0;
+	}
+
+	.rating-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 20rpx 0;
+	}
+	.rating-row .label {
+		margin-bottom: 0;
+	}
+	.rating-wrap {
+		display: flex;
+		align-items: center;
+		gap: 24rpx;
+	}
+	.rating-submit-btn {
+		flex-shrink: 0;
 	}
 
 	.label {
