@@ -1,7 +1,7 @@
 <template>
 	<view class="section-card">
 		<u-title>{{ title }}</u-title>
-		<slot></slot>
+		<view class="section-card__body"><slot></slot></view>
 	</view>
 </template>
 
@@ -20,8 +20,7 @@ defineProps<{
 	box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.06);
 }
 
-.section-card :deep(.u-title) {
-	margin-bottom: 28rpx;
-	display: block;
+.section-card__body {
+	margin-top: 40rpx;
 }
 </style>

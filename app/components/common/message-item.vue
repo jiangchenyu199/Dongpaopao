@@ -1,7 +1,6 @@
 <template>
 	<view class="message-item" @click="handleClick">
 		<view class="message-avatar">
-			<!-- <image class="avatar-image" :src="avatar" mode="aspectFill"></image> -->
 			<u-avatar class="avatar-image" :src="avatar" mode="aspectFill"/>
 		</view>
 		<view class="message-content">

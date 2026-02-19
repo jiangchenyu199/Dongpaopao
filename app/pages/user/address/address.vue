@@ -1,45 +1,70 @@
 <template>
 	<view class="page-container">
-		<!-- 我的地址页面 -->
-		<view class="address-container">
-			<scroll-view class="address-content" scroll-y>
-				<u-button @click="addAddress" type="primary">添加新地址</u-button>
-				<view class="address-list">
-					<view class="address-item" v-for="(item, index) in addressList" :key="index">
-						<view class="address-info">
-							<text class="address-name">{{ item.sjr }}</text>
-							<text class="address-phone">{{ item.phone }}</text>
-							<u-tag text="默认" v-if="item.isDefault" plain/>
+		<view class="page-content">
+			<view class="add-card" @click="addAddress">
+				<u-icon name="plus" size="16" color="#9ca3af"></u-icon>
+				<text class="add-text">添加新地址</text>
+			</view>
+
+			<view v-if="addressList.length === 0" class="empty-wrap">
+				<u-icon name="map" size="120" color="#d1d5db"></u-icon>
+				<text class="empty-text">暂无收货地址</text>
+				<text class="empty-hint">点击上方添加</text>
+			</view>
+
+			<view class="address-list" v-else>
+				<view
+					v-for="(item, index) in addressList"
+					:key="item.aid || index"
+					class="address-card"
+					:class="{ 'is-default': item.isDefault }"
+				>
+					<view class="card-body">
+						<view class="row name-row">
+							<text class="name">{{ item.sjr }}</text>
+							<text class="phone">{{ item.phone }}</text>
+							<u-tag v-if="item.isDefault" text="默认" type="primary" size="mini" plain />
 						</view>
-						<text class="address-detail">{{ item.detail }}</text>
-						<view class="address-actions">
-							<uni-icons type="compose" size="20" color="#666" @click="editAddress(index)"></uni-icons>
-							<uni-icons type="trash" size="20" color="#ff4d4f" @click="deleteAddress(index)"></uni-icons>
+						<text class="detail">{{ item.detail }}</text>
+					</view>
+					<view class="card-actions">
+						<view class="action-btn" @click="editAddress(index)">
+							<u-icon name="edit-pen" size="20" color="#6b7280"></u-icon>
+							<text>编辑</text>
+						</view>
+						<view class="action-btn danger" @click="deleteAddress(index)">
+							<u-icon name="trash" size="20" color="#ef4444"></u-icon>
+							<text>删除</text>
 						</view>
 					</view>
 				</view>
-			</scroll-view>
+			</view>
 		</view>
 	</view>
 
-	<u-popup :show="showPopup" mode="bottom" round="20" @close="closePopup" safeAreaInsetBottom>
-		<u-form labelWidth="auto" labelPosition="top">
-			<u-form-item label="收货人" prop="userInfo.name" borderBottom>
-				<u-input v-model="formData.sjr" border="none"></u-input>
-			</u-form-item>
-			<u-form-item label="手机号" prop="userInfo.name" borderBottom ref="item1">
-				<u-input v-model="formData.phone" border="none"></u-input>
-			</u-form-item>
-			<u-form-item label="详细地址" prop="userInfo.name" borderBottom ref="item1">
-				<u-input v-model="formData.detail" border="none"></u-input>
-			</u-form-item>
-			<u-form-item label="设为默认地址" labelPosition="left">
-				<template #right><u-switch v-model="formData.isDefault" /></template>
-			</u-form-item>
-		</u-form>
-		<u-button type="primary" @click="saveAddress(isEdit)" :loading="loading">
-			{{ isEdit ? '保存修改' : '添加地址' }}
-		</u-button>
+	<u-popup :show="showPopup" mode="bottom" round="24" @close="closePopup">
+		<view class="popup-inner">
+			<view class="popup-title">{{ isEdit ? '编辑地址' : '新增地址' }}</view>
+			<u-form labelWidth="140" labelPosition="left" class="address-form">
+				<u-form-item label="收货人" borderBottom>
+					<u-input v-model="formData.sjr" placeholder="请输入收货人姓名" border="none" />
+				</u-form-item>
+				<u-form-item label="手机号" borderBottom>
+					<u-input v-model="formData.phone" type="number" placeholder="请输入手机号" border="none" />
+				</u-form-item>
+				<u-form-item label="详细地址" borderBottom>
+					<u-input v-model="formData.detail" type="textarea" placeholder="请输入详细地址" border="none" />
+				</u-form-item>
+				<u-form-item label="设为默认">
+					<template #right>
+						<u-switch v-model="formData.isDefault" size="22" />
+					</template>
+				</u-form-item>
+			</u-form>
+			<u-button type="primary" @click="saveAddress(isEdit)" :loading="loading" customStyle="margin-top: 24rpx;">
+				{{ isEdit ? '保存修改' : '添加地址' }}
+			</u-button>
+		</view>
 	</u-popup>
 </template>
 
@@ -49,15 +74,13 @@
 	import request from '@/utils/request';
 	import { useUserStore } from '@/stores/user';
 
-	const userInfo = useUserStore().info
+	const userInfo = useUserStore().info;
 
-	// 弹出层状态
 	const showPopup = ref(false);
 	const isEdit = ref(false);
 	const editingIndex = ref(-1);
-	const loading = ref(false)
+	const loading = ref(false);
 
-	// 表单数据
 	const formData = reactive({
 		aid: '',
 		sjr: '',
@@ -68,32 +91,19 @@
 	});
 
 	onLoad(() => {
-		fetchAddress()
-	})
+		fetchAddress();
+	});
 
 	const fetchAddress = () => {
 		request({
-			url: "/address/list?uid=" + userInfo.uid,
+			url: '/address/list?uid=' + userInfo.uid
 		}).then((res) => {
-			addressList.value = res.data
-		})
-	}
-
-	// 地址列表
-	const addressList = ref([
-		{
-			sjr: '张三',
-			phone: '13800138000',
-			detail: '清华大学紫荆公寓1号楼502室',
-			isDefault: true
-		}
-	]);
-
-	const goBack = () => {
-		uni.navigateBack();
+			addressList.value = res.data || [];
+		});
 	};
 
-	// 地址操作
+	const addressList = ref<any[]>([]);
+
 	const addAddress = () => {
 		isEdit.value = false;
 		editingIndex.value = -1;
@@ -101,150 +111,209 @@
 		showPopup.value = true;
 	};
 
-	const editAddress = (index : number) => {
+	const editAddress = (index: number) => {
 		isEdit.value = true;
 		editingIndex.value = index;
-		// 填充表单数据
 		const address = addressList.value[index];
-		formData.aid = address.aid;
-		formData.sjr = address.sjr;
-		formData.phone = address.phone;
-		formData.detail = address.detail;
-		formData.isDefault = address.isDefault || false;
+		formData.aid = address.aid || '';
+		formData.sjr = address.sjr || '';
+		formData.phone = address.phone || '';
+		formData.detail = address.detail || '';
+		formData.isDefault = !!address.isDefault;
 		showPopup.value = true;
 	};
 
-	const deleteAddress = (index : number) => {
+	const deleteAddress = (index: number) => {
 		uni.showModal({
 			title: '提示',
 			content: '确定要删除该地址吗？',
 			success: async (res) => {
 				if (res.confirm) {
-					/* 删除操作 */
 					await request({
-						url: "/address/delete",
-						data: {
-							aid: addressList.value[index].aid
-						},
-						method: "DELETE"
-					})
-					addressList.value.splice(index, 1);
-					uni.showToast({
-						title: '删除成功',
-						icon: 'success'
+						url: '/address/delete',
+						data: { aid: addressList.value[index].aid },
+						method: 'DELETE'
 					});
+					addressList.value.splice(index, 1);
+					uni.showToast({ title: '删除成功', icon: 'success' });
 				}
 			}
 		});
 	};
 
-	// 确认表单
-	const saveAddress = async (isEdit) => {
-		if (isEdit) {
-			// 调用更新地址接
-			loading.value = true
-			await request({
-				url: "/address/update",
-				method: "PUT",
-				data: formData
-			}).then((res) => {
-				uni.showToast({
-					title: '更新成功!',
-					icon: 'success'
-				})
-			})
-		} else {
-			// 调用新增接口
-			loading.value = true
-			await request({
-				url: "/address/add",
-				method: "POST",
-				data: formData
-			}).then((res) => {
-				uni.showToast({
-					title: res.msg,
-					icon: res.errCode === 0 ? 'success' : 'error'
-				})
-			})
+	const saveAddress = async (editing: boolean) => {
+		loading.value = true;
+		try {
+			if (editing) {
+				await request({ url: '/address/update', method: 'PUT', data: formData });
+				uni.showToast({ title: '更新成功', icon: 'success' });
+			} else {
+				const res = await request({ url: '/address/add', method: 'POST', data: formData });
+				uni.showToast({ title: res.errCode === 0 ? '添加成功' : (res.msg || '添加失败'), icon: res.errCode === 0 ? 'success' : 'none' });
+			}
+			closePopup();
+			resetForm();
+			fetchAddress();
+		} finally {
+			loading.value = false;
 		}
-		closePopup()
-		resetForm()
-		fetchAddress()
-	}
+	};
 
-	// 关闭弹出层
 	const closePopup = () => {
-		loading.value = false
 		showPopup.value = false;
 		resetForm();
 	};
 
-	// 重置表单
 	const resetForm = () => {
+		formData.aid = '';
 		formData.sjr = '';
 		formData.phone = '';
 		formData.detail = '';
 		formData.isDefault = false;
 	};
 </script>
-<style>
+
+<style scoped>
 	page {
 		height: 100%;
 		background-color: #f5f5f5;
 	}
 
 	.page-container {
-		height: 100%;
+		min-height: 100vh;
+		background-color: #f5f5f5;
+		padding-bottom: 60rpx;
 	}
 
-	.address-content {
-		height: 100%;
-		/* 使用100%高度，让内容自然撑开 */
-		padding: 0 30rpx;
-		box-sizing: border-box;
-		/* 确保内边距包含在高度内 */
+	.page-content {
+		padding: 24rpx;
 	}
 
-	/* 地址列表样式 */
-	.address-list {
-		padding: 20rpx 0;
-	}
-
-	.address-item {
-		padding: 30rpx 0;
-		border-bottom: 1rpx solid #f0f0f0;
-	}
-
-	.address-info {
+	.add-card {
 		display: flex;
 		align-items: center;
-		margin-bottom: 10rpx;
+		justify-content: center;
+		gap: 16rpx;
+		height: 160rpx;
+		background: #fff;
+		border-radius: 20rpx;
+		border: 2rpx dashed #d1d5db;
+		margin-bottom: 24rpx;
 	}
 
-	.address-name {
-		font-size: 28rpx;
-		color: #333;
-		font-weight: bold;
-		margin-right: 20rpx;
+	.add-card:active {
+		background: #f9fafb;
 	}
 
-	.address-phone {
-		font-size: 28rpx;
-		color: #666;
-		margin-right: 20rpx;
+	.add-text {
+		font-size: 30rpx;
+		color: #6b7280;
 	}
 
-	.address-detail {
+	.empty-wrap {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 120rpx 40rpx;
+	}
+
+	.empty-text {
+		font-size: 30rpx;
+		color: #6b7280;
+		margin-top: 24rpx;
+	}
+
+	.empty-hint {
 		font-size: 26rpx;
-		color: #666;
-		line-height: 1.5;
-		display: block;
+		color: #9ca3af;
+		margin-top: 12rpx;
+	}
+
+	.address-list {
+		display: flex;
+		flex-direction: column;
+		gap: 24rpx;
+	}
+
+	.address-card {
+		background-color: #fff;
+		border-radius: 20rpx;
+		padding: 28rpx 24rpx;
+		box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.06);
+		border-left: 6rpx solid transparent;
+	}
+
+	.address-card.is-default {
+		border-left-color: #1a73e8;
+	}
+
+	.card-body {
 		margin-bottom: 20rpx;
 	}
 
-	.address-actions {
+	.name-row {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 16rpx;
+		margin-bottom: 16rpx;
+	}
+
+	.name {
+		font-size: 32rpx;
+		font-weight: 600;
+		color: #1f2937;
+	}
+
+	.phone {
+		font-size: 28rpx;
+		color: #6b7280;
+	}
+
+	.detail {
+		font-size: 28rpx;
+		color: #4b5563;
+		line-height: 1.5;
+		display: block;
+		padding-left: 0;
+	}
+
+	.card-actions {
 		display: flex;
 		justify-content: flex-end;
-		gap: 30rpx;
+		gap: 32rpx;
+		padding-top: 20rpx;
+		border-top: 1rpx solid #f3f4f6;
+	}
+
+	.action-btn {
+		display: flex;
+		align-items: center;
+		gap: 8rpx;
+		font-size: 26rpx;
+		color: #6b7280;
+	}
+
+	.action-btn.danger {
+		color: #ef4444;
+	}
+
+	.popup-inner {
+		padding: 32rpx 24rpx;
+		padding-bottom: calc(32rpx + env(safe-area-inset-bottom, 0px));
+		background: #fff;
+	}
+
+	.popup-title {
+		font-size: 34rpx;
+		font-weight: 600;
+		color: #1f2937;
+		margin-bottom: 32rpx;
+		text-align: center;
+	}
+
+	.address-form {
+		margin-bottom: 8rpx;
 	}
 </style>

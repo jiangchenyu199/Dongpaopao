@@ -1,31 +1,31 @@
 {
-	"name": "app",
-	"appid": "",
-	"description": "",
-	"versionName": "1.0.0",
-	"versionCode": "100",
-	"transformPx": false,
-	/* 小程序特有相关 */
-	"mp-weixin": {
-		"appid": "",
-		"setting": {
-			"urlCheck": false
-		},
-		"usingComponents": true,
-		"permission": {
-			"scope.userLocation": {
-				"desc": "需要获取用户位置信息"
-			}
-		}
-	},
-	"requiredPrivateInfos": [
-		"getLocation",
-		"onLocationChange",
-		"startLocationUpdateBackground",
-		"chooseAddress"
-	],
-	"uniStatistics": {
-		"enable": false
-	},
-	"vueVersion": "3"
+    "name" : "app",
+    "appid" : "",
+    "description" : "",
+    "versionName" : "1.0.0",
+    "versionCode" : "100",
+    "transformPx" : false,
+    /* 小程序特有相关 */
+    "mp-weixin" : {
+        "appid" : "",
+        "setting" : {
+            "urlCheck" : false
+        },
+        "usingComponents" : true,
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "需要获取用户位置信息"
+            }
+        }
+    },
+    "requiredPrivateInfos" : [
+        "getLocation",
+        "onLocationChange",
+        "startLocationUpdateBackground",
+        "chooseAddress"
+    ],
+    "uniStatistics" : {
+        "enable" : false
+    },
+    "vueVersion" : "3"
 }

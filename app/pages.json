@@ -44,11 +44,23 @@
 		},
         {
             "path": "pages/user/wallet"
+        },
+		{
+			"path": "pages/user/wallet-detail",
+			"style": {
+				"navigationBarTitleText": "零钱明细"
+			}
 		},
 		{
 			"path": "pages/user/cooperation/cooperation",
 			"style": {
 				"navigationBarTitleText": "商务合作"
+			}
+		},
+		{
+			"path": "pages/user/feedback/feedback",
+			"style": {
+				"navigationBarTitleText": "意见反馈"
 			}
 		}
 	],

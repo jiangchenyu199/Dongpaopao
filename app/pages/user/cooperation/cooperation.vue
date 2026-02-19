@@ -111,5 +111,7 @@ const remark = ref('感谢支持，商务合作请备注联系方式。');
 	color: #374151;
 	line-height: 1.6;
 	display: block;
+	margin-top: 20rpx;
+	text-align: center;
 }
 </style>

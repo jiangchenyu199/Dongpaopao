@@ -41,6 +41,7 @@ const functionList = ref([
 	{ id: 1, name: '我的订单', icon: 'list', path: '/pages/user/orders/my-orders' },
 	{ id: 2, name: '我的钱包', icon: 'wallet', path: '/pages/user/wallet' },
 	{ id: 3, name: '我的地址', icon: 'location', path: '/pages/user/address/address' },
+	{ id: 4, name: '意见反馈', icon: 'chat', path: '/pages/user/feedback/feedback' },
 	{ id: 99, name: '商务合作', icon: 'contact', path: '/pages/user/cooperation/cooperation' },
 ]);
 
