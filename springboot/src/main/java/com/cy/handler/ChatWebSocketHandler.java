@@ -4,7 +4,6 @@ import com.alibaba.fastjson2.JSONObject;
 import com.cy.service.app.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 
@@ -16,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class ChatWebSocketHandler implements WebSocketHandler {
 
     private final MessageService messageService;
@@ -63,7 +61,6 @@ public class ChatWebSocketHandler implements WebSocketHandler {
 
         if (userId != null) {
             onlineUsers.put(userId, session);
-            log.info("用户 {} 上线, 当前在线用户数: {}", userId, onlineUsers.size());
 
             // 发送连接成功确认
             TextMessage response = new TextMessage(jsonObject.toJSONString());

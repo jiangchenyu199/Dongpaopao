@@ -63,23 +63,18 @@ const addressListShow = ref(false);
 
 // 加载地址列表
 const loadAddressList = async (autoSelect = false) => {
-	try {
-		const res = await request({
-			url: `/address/list?uid=${userStore.info.uid}`
-		});
+	const res = await request({
+		url: `/address/list?uid=${userStore.info.uid}`
+	});
 
-		if (res.data && Array.isArray(res.data)) {
-			addressList.value = res.data;
-			// 如果需要自动选择且有默认地址，自动选中
-			if (autoSelect) {
-				const defaultAddr = res.data.find((addr: any) => addr.isDefault);
-				if (defaultAddr) {
-					selectedAddress.value = defaultAddr;
-				}
+	if (res?.data && Array.isArray(res.data)) {
+		addressList.value = res.data;
+		if (autoSelect) {
+			const defaultAddr = res.data.find((addr: any) => addr.isDefault);
+			if (defaultAddr) {
+				selectedAddress.value = defaultAddr;
 			}
 		}
-	} catch (error) {
-		console.error('获取地址列表失败:', error);
 	}
 };
 

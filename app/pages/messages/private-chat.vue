@@ -586,7 +586,6 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 	};
 
 	const handleUserJoin = (message) => {
-		console.log('用户加入:', message);
 	};
 
 	const handleMessageRead = (message) => {
@@ -597,7 +596,6 @@ import ChatMessageMenu from '@/components/chat/message-menu.vue';
 	};
 
 	const handleTyping = (message) => {
-		console.log('对方正在输入:', message);
 	};
 </script>
 
