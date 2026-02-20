@@ -18,4 +18,8 @@ public interface OrderMapper extends BaseMapper<Order> {
                                    @Param("status") String status, @Param("type") String type);
 
     JSONObject detail(@Param("oid") String oid);
+
+    Page<JSONObject> getAdminOrderList(Page<JSONObject> page, @Param("oid") String oid, @Param("keyword") String keyword, @Param("status") String status);
+
+    JSONObject getAdminOrderDetail(@Param("oid") String oid);
 }

@@ -7,9 +7,9 @@
           <el-button type="primary" :icon="Refresh" @click="loadTypes">刷新</el-button>
         </div>
       </template>
-      <el-table v-loading="loading" :data="types" stripe>
-        <el-table-column prop="orderTypeId" label="类型ID" width="120" />
-        <el-table-column prop="typeName" label="名称" width="120" />
+      <el-table v-loading="loading" :data="types" stripe style="width: 100%">
+        <el-table-column prop="orderTypeId" label="类型ID" min-width="120" />
+        <el-table-column prop="typeName" label="名称" min-width="120" />
         <el-table-column prop="emojiIcon" label="图标" width="80" />
         <el-table-column prop="enabled" label="状态" width="90">
           <template #default="{ row }">
@@ -54,6 +54,10 @@ onMounted(loadTypes)
 </script>
 
 <style scoped>
+.order-types-page {
+  width: 100%;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

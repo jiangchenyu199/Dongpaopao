@@ -28,7 +28,12 @@ request.interceptors.response.use(
     return Promise.reject(new Error(data?.msg || '请求失败'))
   },
   (err) => {
-    ElMessage.error(err.message || '网络异常')
+    if (err.response?.status === 401) {
+      localStorage.removeItem('admin_token')
+      window.location.href = '/login'
+    } else {
+      ElMessage.error(err.message || '网络异常')
+    }
     return Promise.reject(err)
   }
 )

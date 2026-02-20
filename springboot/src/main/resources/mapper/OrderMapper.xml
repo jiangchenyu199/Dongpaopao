@@ -59,4 +59,54 @@
         LEFT JOIN order_status AS status ON o.status = status.status
         WHERE o.oid = #{oid}
     </select>
+
+    <select id="getAdminOrderList" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT o.oid, o.oid as orderNo,
+            xdr_user.nickname as xdr, jdr_user.nickname as jdr,
+            xdr_user.uid as xdrId, jdr_user.uid as jdrId,
+            order_type.type_name as typeName,
+            o.status,
+            order_status.color,
+            o.amount, o.rating,
+            o.create_time as createTime,
+            o.accept_time as acceptTime,
+            o.expect_time as expectedDeliveryTime,
+            o.complete_time as finishTime
+        FROM `order` o
+        LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
+        LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
+        LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
+        LEFT JOIN order_status ON o.status = order_status.status
+        <where>
+            <if test="oid != null and oid != ''">AND o.oid = #{oid}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (o.oid LIKE CONCAT('%', #{keyword}, '%')
+                OR xdr_user.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR jdr_user.nickname LIKE CONCAT('%', #{keyword}, '%')
+                OR order_type.type_name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="status != null and status != ''">AND o.status = #{status}</if>
+        </where>
+        ORDER BY o.create_time DESC
+    </select>
+
+    <select id="getAdminOrderDetail" resultType="com.alibaba.fastjson2.JSONObject">
+        SELECT o.oid as orderNo,
+            xdr_user.nickname as xdr, xdr_user.uid as xdrId,
+            jdr_user.nickname as jdr, jdr_user.uid as jdrId,
+            o.amount, o.rating,
+            order_status.description as status, order_status.color,
+            jdr_user.phone as phone,
+            addr.detail as address,
+            o.create_time as createTime,
+            o.accept_time as payTime,
+            o.expect_time as shipTime,
+            o.complete_time as finishTime
+        FROM `order` o
+        LEFT JOIN order_status ON o.status = order_status.status
+        LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
+        LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
+        LEFT JOIN address addr ON o.aid = addr.aid
+        WHERE o.oid = #{oid}
+    </select>
 </mapper>

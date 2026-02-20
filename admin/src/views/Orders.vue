@@ -18,8 +18,8 @@
         </el-select>
         <el-button type="primary" @click="loadOrders">查询</el-button>
       </div>
-      <el-table v-loading="loading" :data="orders" stripe>
-        <el-table-column prop="oid" label="订单ID" width="180" show-overflow-tooltip />
+      <el-table v-loading="loading" :data="orders" stripe style="width: 100%">
+        <el-table-column prop="oid" label="订单ID" min-width="180" show-overflow-tooltip />
         <el-table-column prop="xdr" label="下单人" width="120" />
         <el-table-column prop="jdr" label="接单人" width="120" />
         <el-table-column prop="amount" label="金额" width="80" align="right">
@@ -116,6 +116,10 @@ onMounted(loadOrders)
 </script>
 
 <style scoped>
+.orders-page {
+  width: 100%;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

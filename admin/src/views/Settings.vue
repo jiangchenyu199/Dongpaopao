@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-page">
+  <div class="settings-page" style="width: 100%">
     <el-row :gutter="16">
       <el-col :span="16">
         <el-card shadow="hover">
@@ -9,8 +9,8 @@
               <el-button type="primary" :icon="Refresh" @click="loadConfig">刷新</el-button>
             </div>
           </template>
-          <el-table v-loading="loading" :data="configList" stripe>
-            <el-table-column prop="configKey" label="配置键" width="180" />
+          <el-table v-loading="loading" :data="configList" stripe style="width: 100%">
+            <el-table-column prop="configKey" label="配置键" min-width="180" />
             <el-table-column prop="configValue" label="配置值" min-width="200" show-overflow-tooltip />
             <el-table-column prop="description" label="描述" width="150" />
             <el-table-column label="操作" width="100" fixed="right">
@@ -23,7 +23,7 @@
         </el-card>
       </el-col>
       <el-col :span="8">
-        <el-card shadow="hover">
+        <el-card shadow="hover" style="margin-bottom: 16px">
           <template #header>
             <span>系统信息</span>
           </template>
@@ -31,15 +31,30 @@
             <el-descriptions-item v-if="systemInfo.cpu" label="CPU">
               {{ systemInfo.cpu?.model }} ({{ systemInfo.cpu?.cores }}核)
             </el-descriptions-item>
-            <el-descriptions-item v-if="systemInfo.memory" label="内存">
-              {{ systemInfo.memory?.used }} / {{ systemInfo.memory?.total }}
+            <el-descriptions-item v-if="systemInfo.os" label="操作系统">
+              {{ systemInfo.os?.name }} {{ systemInfo.os?.version }} ({{ systemInfo.os?.arch }})
             </el-descriptions-item>
-            <el-descriptions-item v-if="systemInfo.jvm" label="JVM">
+            <el-descriptions-item v-if="systemInfo.java" label="Java">
+              {{ systemInfo.java?.vendor }} {{ systemInfo.java?.version }}
+            </el-descriptions-item>
+          </el-descriptions>
+          <el-text v-else-if="systemInfoLoading" type="info" size="small">加载中...</el-text>
+          <el-text v-else type="info" size="small">获取系统信息失败</el-text>
+        </el-card>
+        <el-card shadow="hover">
+          <template #header>
+            <span>JVM 信息</span>
+          </template>
+          <el-descriptions v-if="systemInfo" :column="1" border size="small">
+            <el-descriptions-item v-if="systemInfo.memory" label="堆内存">
+              {{ systemInfo.memory?.used }} / {{ systemInfo.memory?.total }} (最大 {{ systemInfo.memory?.max }})
+            </el-descriptions-item>
+            <el-descriptions-item v-if="systemInfo.jvm" label="使用率">
               {{ systemInfo.jvm?.usage }}
             </el-descriptions-item>
           </el-descriptions>
-          <el-text v-else type="info" size="small">点击加载获取系统信息</el-text>
-          <el-button type="primary" size="small" class="mt-2" @click="loadSystemInfo">加载</el-button>
+          <el-text v-else-if="systemInfoLoading" type="info" size="small">加载中...</el-text>
+          <el-text v-else type="info" size="small">获取 JVM 信息失败</el-text>
         </el-card>
       </el-col>
     </el-row>
@@ -71,6 +86,7 @@ import { ElMessage } from 'element-plus'
 const loading = ref(false)
 const configList = ref([])
 const systemInfo = ref(null)
+const systemInfoLoading = ref(false)
 const editVisible = ref(false)
 const saveLoading = ref(false)
 const editForm = ref({ configKey: '', configValue: '' })
@@ -88,11 +104,14 @@ const loadConfig = async () => {
 }
 
 const loadSystemInfo = async () => {
+  systemInfoLoading.value = true
   try {
     const res = await request({ url: '/admin/system/config/info', method: 'get' })
     systemInfo.value = res?.data ?? res ?? null
   } catch {
-    ElMessage.error('获取系统信息失败')
+    systemInfo.value = null
+  } finally {
+    systemInfoLoading.value = false
   }
 }
 
@@ -115,10 +134,17 @@ const saveConfig = async () => {
   }
 }
 
-onMounted(loadConfig)
+onMounted(() => {
+  loadConfig()
+  loadSystemInfo()
+})
 </script>
 
 <style scoped>
+.settings-page {
+  width: 100%;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

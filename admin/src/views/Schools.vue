@@ -7,9 +7,9 @@
           <el-button type="primary" :icon="Refresh" @click="loadSchools">刷新</el-button>
         </div>
       </template>
-      <el-table v-loading="loading" :data="schools" stripe>
+      <el-table v-loading="loading" :data="schools" stripe style="width: 100%">
         <el-table-column prop="sid" label="ID" width="80" />
-        <el-table-column prop="sname" label="学校名称" />
+        <el-table-column prop="sname" label="学校名称" min-width="200" />
       </el-table>
       <el-empty v-if="!loading && schools.length === 0" description="暂无学校数据" />
     </el-card>
@@ -40,6 +40,10 @@ onMounted(loadSchools)
 </script>
 
 <style scoped>
+.schools-page {
+  width: 100%;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;

@@ -34,6 +34,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
+import { login } from '@/api/login'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -51,14 +52,21 @@ const rules = {
 
 const handleLogin = async () => {
   if (!formRef.value) return
-  await formRef.value.validate((valid) => {
+  await formRef.value.validate(async (valid) => {
     if (!valid) return
     loading.value = true
-    // 暂不对接后端，模拟登录成功
-    setTimeout(() => {
+    try {
+      const res = await login(form.username, form.password)
+      const token = res?.data?.token
+      if (token) {
+        localStorage.setItem('admin_token', token)
+        router.push('/home')
+      }
+    } catch {
+
+    } finally {
       loading.value = false
-      router.push('/home')
-    }, 600)
+    }
   })
 }
 </script>

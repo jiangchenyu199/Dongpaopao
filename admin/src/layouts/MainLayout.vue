@@ -62,6 +62,7 @@ const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta?.title ?? '首页')
 
 const handleLogout = () => {
+  localStorage.removeItem('admin_token')
   router.push('/login')
 }
 </script>

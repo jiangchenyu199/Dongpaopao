@@ -12,8 +12,8 @@
           @keyup.enter="loadUsers" />
         <el-button type="primary" @click="loadUsers">查询</el-button>
       </div>
-      <el-table v-loading="loading" :data="users" stripe>
-        <el-table-column prop="uid" label="用户ID" width="280" show-overflow-tooltip />
+      <el-table v-loading="loading" :data="users" stripe style="width: 100%">
+        <el-table-column prop="uid" label="用户ID" min-width="200" show-overflow-tooltip />
         <el-table-column prop="nickname" label="昵称" width="120" />
         <el-table-column prop="phone" label="手机号" width="130" />
         <el-table-column prop="balance" label="余额" width="100" align="right">
@@ -95,6 +95,10 @@ onMounted(loadUsers)
 </script>
 
 <style scoped>
+.users-page {
+  width: 100%;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
