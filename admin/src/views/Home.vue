@@ -1,143 +1,117 @@
 <template>
-    <el-container class="home-container">
-        <el-header class="flex items-center justify-end bg-white border-b border-gray-200 px-5">
-            <el-dropdown>
-                <div class="flex items-center cursor-pointer px-2.5 py-2.5 transition-all hover:bg-gray-50 rounded">
-                    <span class="ml-2.5 text-sm text-gray-800">{{ userStore.userInfo?.username || '管理员' }}</span>
-                    <el-icon class="el-icon--right">
-                        <ArrowDown />
-                    </el-icon>
-                </div>
-                <template #dropdown>
-                    <el-dropdown-menu>
-                        <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
-                    </el-dropdown-menu>
-                </template>
-            </el-dropdown>
-        </el-header>
+  <div class="home-page">
+    <el-card class="welcome-card" shadow="never">
+      <template #header>
+        <span class="card-header-text">欢迎使用东跑跑管理后台</span>
+      </template>
+      <el-text type="info">校园跑腿系统 · 在这里管理订单、用户与系统配置</el-text>
+    </el-card>
 
-        <el-container>
-            <el-aside width="200px" class="home-aside">
-                <el-menu :default-active="activeMenu" class="el-menu-vertical" @select="handleSelect">
-                    <el-menu-item index="dashboard">
-                        <el-icon>
-                            <DataAnalysis />
-                        </el-icon>
-                        <span>仪表板</span>
-                    </el-menu-item>
-                    <el-menu-item index="users">
-                        <el-icon>
-                            <User />
-                        </el-icon>
-                        <span>用户管理</span>
-                    </el-menu-item>
-                    <el-menu-item index="orders">
-                        <el-icon>
-                            <Document />
-                        </el-icon>
-                        <span>订单管理</span>
-                    </el-menu-item>
-                    <el-menu-item index="profile">
-                        <el-icon>
-                            <User />
-                        </el-icon>
-                        <span>个人设置</span>
-                    </el-menu-item>
-                    <el-menu-item index="settings">
-                        <el-icon>
-                            <Setting />
-                        </el-icon>
-                        <span>系统设置</span>
-                    </el-menu-item>
-                </el-menu>
-            </el-aside>
+    <el-row :gutter="16" class="stats-row">
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-body">
+            <el-icon :size="32" color="#f59e0b"><Box /></el-icon>
+            <div class="stat-info">
+              <el-statistic title="今日订单">
+                <template #default>--</template>
+              </el-statistic>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-body">
+            <el-icon :size="32" color="#f59e0b"><User /></el-icon>
+            <div class="stat-info">
+              <el-statistic title="用户总数">
+                <template #default>--</template>
+              </el-statistic>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover" class="stat-card">
+          <div class="stat-body">
+            <el-icon :size="32" color="#f59e0b"><CircleCheck /></el-icon>
+            <div class="stat-info">
+              <el-statistic title="已完成订单">
+                <template #default>--</template>
+              </el-statistic>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
 
-            <el-main class="home-main">
-                <router-view />
-            </el-main>
-        </el-container>
-    </el-container>
+    <el-card shadow="hover" class="quick-card">
+      <template #header>
+        <span>快捷入口</span>
+      </template>
+      <el-text type="info" size="small" class="quick-hint">对接后端后，此处将展示各业务模块入口</el-text>
+      <div class="quick-tags">
+        <el-tag>订单管理</el-tag>
+        <el-tag type="success">用户管理</el-tag>
+        <el-tag type="warning">系统设置</el-tag>
+      </div>
+    </el-card>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ArrowDown, DataAnalysis, User, Document, Goods, Setting } from '@element-plus/icons-vue'
-import { useUserStore } from '@/stores/user'
-
-const router = useRouter()
-const route = useRoute()
-const userStore = useUserStore()
-
-const activeMenu = computed(() => {
-    const path = route.path
-    if (path.startsWith('/home/')) {
-        return path.replace('/home/', '')
-    }
-    return 'dashboard'
-})
-
-const handleSelect = (index) => {
-    router.push(`/home/${index}`)
-}
-
-const handleLogout = () => {
-    userStore.logout()
-    router.push('/login')
-}
+import { Box, User, CircleCheck } from '@element-plus/icons-vue'
 </script>
 
 <style scoped>
-.home-container {
-    height: 100vh;
+.home-page {
+  width: 100%;
 }
 
-.home-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: #fff;
-    border-bottom: 1px solid #e4e7ed;
-    padding: 0 20px;
+.welcome-card {
+  margin-bottom: 24px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-.header-left .logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #409eff;
-    margin: 0;
+.welcome-card :deep(.el-card__header) {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15);
 }
 
-.header-right .user-info {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 0 10px;
-    transition: all 0.3s;
+.card-header-text {
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.header-right .user-info:hover {
-    background: #f5f7fa;
-    border-radius: 4px;
+.stats-row {
+  margin-bottom: 24px;
 }
 
-.header-right .username {
-    margin-left: 10px;
-    font-size: 14px;
-    color: #303133;
+.stat-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.home-aside {
-    background: #fff;
-    border-right: 1px solid #e4e7ed;
+.stat-info :deep(.el-statistic__head) {
+  font-size: 13px;
+  color: #6b7280;
 }
 
-.el-menu-vertical {
-    border-right: none;
+.stat-info :deep(.el-statistic__content) {
+  font-size: 22px;
+  font-weight: 700;
 }
 
-.home-main {
-    background: #f5f7fa;
-    padding: 20px;
+.quick-card .quick-hint {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.quick-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 </style>

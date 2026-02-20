@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+/* 全局基础 */
+html, body, #app {
+  height: 100%;
+  margin: 0;
+}
+
+/* Element Plus 覆盖 - 主色 */
+:root {
+  --el-color-primary: #f59e0b;
+  --el-color-primary-light-3: #fbbf24;
+  --el-color-primary-light-5: #fcd34d;
+  --el-color-primary-light-7: #fde68a;
+  --el-color-primary-dark-2: #d97706;
+}

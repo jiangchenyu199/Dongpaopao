@@ -1,47 +1,23 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
-import Home from '../views/Home.vue'
+import MainLayout from '../layouts/MainLayout.vue'
 
 const routes = [
   {
-    path: '/',
-    redirect: '/login'
-  },
-  {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: () => import('../views/Login.vue'),
+    meta: { title: '登录', public: true }
   },
   {
-    path: '/home',
-    name: 'Home',
-    component: Home,
-    redirect: '/home/dashboard',
+    path: '/',
+    component: MainLayout,
+    redirect: '/home',
     children: [
       {
-        path: 'dashboard',
-        name: 'Dashboard',
-        component: () => import('../views/Dashboard.vue')
-      },
-      {
-        path: 'users',
-        name: 'Users',
-        component: () => import('../views/Users.vue')
-      },
-      {
-        path: 'orders',
-        name: 'Orders',
-        component: () => import('../views/Orders.vue')
-      },
-      {
-        path: 'profile',
-        name: 'Profile',
-        component: () => import('../views/Profile.vue')
-      },
-      {
-        path: 'settings',
-        name: 'Settings',
-        component: () => import('../views/Settings.vue')
+        path: 'home',
+        name: 'Home',
+        component: () => import('../views/Home.vue'),
+        meta: { title: '首页' }
       }
     ]
   }
