@@ -9,56 +9,6 @@ CREATE TABLE `address` (
   KEY `fk_address_user` (`uid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='地址表'
 
-CREATE TABLE `admin_permission` (
-  `id` int DEFAULT NULL COMMENT '主键id',
-  `pkey` varchar(30) DEFAULT NULL COMMENT '键',
-  `name` varchar(50) DEFAULT NULL COMMENT '权限名'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='管理端权限表'
-
-CREATE TABLE `admin_role_permission` (
-  `rid` int DEFAULT NULL,
-  `pid` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色权限表'
-
-CREATE TABLE `admin_statistics` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `data` json NOT NULL COMMENT '统计数据',
-  `create_time` datetime DEFAULT NULL COMMENT '统计时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='统计表'
-
-CREATE TABLE `admin_system_config` (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `config_key` varchar(50) DEFAULT NULL COMMENT '配置键',
-  `config_value` varchar(100) DEFAULT NULL COMMENT '配置值',
-  `description` varchar(100) DEFAULT NULL COMMENT '描述',
-  `create_time` datetime DEFAULT (now()) COMMENT '创建时间',
-  `update_time` datetime DEFAULT (now()) COMMENT '更新时间',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='管理端系统设置'
-
-CREATE TABLE `admin_user` (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT 'id',
-  `username` varchar(20) NOT NULL COMMENT '用户名',
-  `nickname` varchar(50) DEFAULT NULL COMMENT '昵称',
-  `password` varchar(64) NOT NULL COMMENT '密码',
-  `phone` varchar(15) DEFAULT NULL COMMENT '手机号',
-  `email` varchar(50) DEFAULT NULL COMMENT '邮箱',
-  `role_id` int DEFAULT NULL COMMENT '角色id',
-  `status` tinyint(1) DEFAULT '0' COMMENT '状态',
-  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
-  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-  `last_login_time` datetime DEFAULT NULL COMMENT '上次登录时间',
-  PRIMARY KEY (`id`),
-  KEY `admin_user_id_index` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `admin_user_role` (
-  `id` int NOT NULL AUTO_INCREMENT COMMENT '主键id',
-  `name` varchar(50) DEFAULT NULL COMMENT '角色名',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色'
-
 CREATE TABLE `conversation` (
   `cid` varchar(50) NOT NULL COMMENT '会话id',
   `oid` varchar(50) DEFAULT NULL COMMENT '订单id',
@@ -164,3 +114,113 @@ CREATE TABLE `user` (
   CONSTRAINT `chk_amount_non_negative` CHECK ((`balance` >= 0))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表'
 
+CREATE TABLE `sys_config` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `config_key` varchar(100) NOT NULL COMMENT '配置键',
+  `config_value` text COMMENT '配置值',
+  `config_type` varchar(20) DEFAULT 'string' COMMENT 'string/number/boolean/json',
+  `description` varchar(200) DEFAULT NULL,
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sys_config_key` (`config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统参数';
+
+CREATE TABLE `sys_login_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) DEFAULT NULL,
+  `status` tinyint DEFAULT 0 COMMENT '0成功 1失败',
+  `ip` varchar(50) DEFAULT NULL,
+  `location` varchar(100) DEFAULT NULL,
+  `browser` varchar(100) DEFAULT NULL,
+  `msg` varchar(500) DEFAULT NULL,
+  `login_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sys_login_log_time` (`login_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='登录日志';
+
+CREATE TABLE `sys_menu` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `parent_id` bigint NOT NULL DEFAULT 0 COMMENT '父菜单ID',
+  `name` varchar(50) NOT NULL COMMENT '菜单名称',
+  `path` varchar(200) DEFAULT NULL COMMENT '路由路径',
+  `component` varchar(200) DEFAULT NULL COMMENT '组件路径',
+  `permission` varchar(100) DEFAULT NULL COMMENT '权限标识',
+  `type` char(1) NOT NULL COMMENT 'M目录 C菜单 F按钮',
+  `icon` varchar(100) DEFAULT NULL,
+  `sort` int DEFAULT 0,
+  `visible` tinyint NOT NULL DEFAULT 1 COMMENT '0隐藏 1显示',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0停用 1正常',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单权限';
+
+CREATE TABLE `sys_oper_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `title` varchar(100) DEFAULT NULL,
+  `business_type` varchar(50) DEFAULT NULL,
+  `method` varchar(200) DEFAULT NULL,
+  `request_method` varchar(10) DEFAULT NULL,
+  `operator_id` bigint DEFAULT NULL,
+  `operator_name` varchar(50) DEFAULT NULL,
+  `request_url` varchar(500) DEFAULT NULL,
+  `request_param` text,
+  `response_result` text,
+  `status` tinyint DEFAULT 0 COMMENT '0成功 1失败',
+  `error_msg` text,
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sys_oper_log_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='操作日志';
+
+CREATE TABLE `sys_role` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `role_name` varchar(50) NOT NULL COMMENT '角色名称',
+  `role_key` varchar(50) NOT NULL COMMENT '角色标识',
+  `sort` int DEFAULT 0,
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0停用 1正常',
+  `remark` varchar(500) DEFAULT NULL,
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sys_role_key` (`role_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色';
+
+CREATE TABLE `sys_role_menu` (
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  `menu_id` bigint NOT NULL COMMENT '菜单ID',
+  PRIMARY KEY (`role_id`, `menu_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单关联';
+
+CREATE TABLE `sys_statistics` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `snapshot_type` varchar(50) NOT NULL COMMENT '统计类型',
+  `data` json NOT NULL COMMENT '统计数据',
+  `snapshot_date` date DEFAULT NULL COMMENT '统计日期',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_sys_statistics_type_date` (`snapshot_type`, `snapshot_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='统计快照';
+
+CREATE TABLE `sys_user` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `username` varchar(50) NOT NULL COMMENT '用户名',
+  `password` varchar(100) NOT NULL COMMENT '密码',
+  `nickname` varchar(50) DEFAULT NULL COMMENT '昵称',
+  `phone` varchar(20) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `avatar` varchar(500) DEFAULT NULL,
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0停用 1正常',
+  `remark` varchar(500) DEFAULT NULL,
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sys_user_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='管理员';
+
+CREATE TABLE `sys_user_role` (
+  `user_id` bigint NOT NULL COMMENT '用户ID',
+  `role_id` bigint NOT NULL COMMENT '角色ID',
+  PRIMARY KEY (`user_id`, `role_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色关联';

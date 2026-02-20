@@ -13,6 +13,24 @@
           </el-icon>
           <span>首页</span>
         </el-menu-item>
+        <el-sub-menu index="business">
+          <template #title>
+            <el-icon>
+              <Box />
+            </el-icon>
+            <span>业务管理</span>
+          </template>
+          <el-menu-item index="/orders">订单管理</el-menu-item>
+          <el-menu-item index="/users">用户管理</el-menu-item>
+          <el-menu-item index="/schools">学校管理</el-menu-item>
+          <el-menu-item index="/order-types">订单类型</el-menu-item>
+        </el-sub-menu>
+        <el-menu-item index="/settings">
+          <el-icon>
+            <Setting />
+          </el-icon>
+          <span>系统设置</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container direction="vertical" class="main-wrap">
@@ -35,7 +53,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { House } from '@element-plus/icons-vue'
+import { House, Box, Setting } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -79,6 +97,11 @@ const handleLogout = () => {
 }
 
 .sidebar-menu :deep(.el-menu-item) {
+  margin: 4px 8px;
+  border-radius: 8px;
+}
+
+.sidebar-menu :deep(.el-sub-menu__title) {
   margin: 4px 8px;
   border-radius: 8px;
 }

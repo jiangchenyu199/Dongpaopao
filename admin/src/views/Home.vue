@@ -52,9 +52,9 @@
       </template>
       <el-text type="info" size="small" class="quick-hint">对接后端后，此处将展示各业务模块入口</el-text>
       <div class="quick-tags">
-        <el-tag>订单管理</el-tag>
-        <el-tag type="success">用户管理</el-tag>
-        <el-tag type="warning">系统设置</el-tag>
+        <el-tag><router-link to="/orders" class="quick-link">订单管理</router-link></el-tag>
+        <el-tag type="success"><router-link to="/users" class="quick-link">用户管理</router-link></el-tag>
+        <el-tag type="warning"><router-link to="/settings" class="quick-link">系统设置</router-link></el-tag>
       </div>
     </el-card>
   </div>
@@ -113,5 +113,10 @@ import { Box, User, CircleCheck } from '@element-plus/icons-vue'
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.quick-link {
+  color: inherit;
+  text-decoration: none;
 }
 </style>

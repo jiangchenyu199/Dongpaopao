@@ -18,6 +18,36 @@ const routes = [
         name: 'Home',
         component: () => import('../views/Home.vue'),
         meta: { title: '首页' }
+      },
+      {
+        path: 'orders',
+        name: 'Orders',
+        component: () => import('../views/Orders.vue'),
+        meta: { title: '订单管理' }
+      },
+      {
+        path: 'users',
+        name: 'Users',
+        component: () => import('../views/Users.vue'),
+        meta: { title: '用户管理' }
+      },
+      {
+        path: 'schools',
+        name: 'Schools',
+        component: () => import('../views/Schools.vue'),
+        meta: { title: '学校管理' }
+      },
+      {
+        path: 'order-types',
+        name: 'OrderTypes',
+        component: () => import('../views/OrderTypes.vue'),
+        meta: { title: '订单类型' }
+      },
+      {
+        path: 'settings',
+        name: 'Settings',
+        component: () => import('../views/Settings.vue'),
+        meta: { title: '系统设置' }
       }
     ]
   }

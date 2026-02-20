@@ -1,10 +1,9 @@
 package com.cy.util;
 
-import com.cy.service.admin.AdminSystemConfigService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -16,23 +15,17 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    @Autowired
-    private AdminSystemConfigService adminSystemConfigService;
+    @Value("${jwt.secret:dongpaopao-admin-jwt-secret-key-must-be-at-least-256-bits-for-hs256}")
+    private String secret;
 
-    private static final String JWT_SECRET_KEY = "jwt.secret";
-    private static final String DEFAULT_SECRET = "your-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm";
-    private static final Long DEFAULT_EXPIRATION = 86400000L;
-
-    private String getSecret() {
-        String secret = adminSystemConfigService.getConfigValue(JWT_SECRET_KEY);
-        return secret != null ? secret : DEFAULT_SECRET;
-    }
+    @Value("${jwt.expiration:86400000}")
+    private Long expiration;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(getSecret().getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Integer userId, String username) {
+    public String generateToken(Long userId, String username) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("username", username);
@@ -41,7 +34,7 @@ public class JwtUtil {
 
     private String createToken(Map<String, Object> claims, String subject) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + DEFAULT_EXPIRATION);
+        Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
                 .claims(claims)

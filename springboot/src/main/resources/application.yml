@@ -15,6 +15,11 @@ oss:
   endpoint: ${OSS_ENDPOINT:http://localhost:9000}
   region: ${OSS_REGION:cn-north-1}
 
+# JWT配置（管理端登录鉴权）
+jwt:
+  secret: ${JWT_SECRET:dongpaopao-admin-jwt-secret-key-must-be-at-least-256-bits-for-hs256}
+  expiration: ${JWT_EXPIRATION:86400000}
+
 # 微信小程序配置
 weixin:
   app-id: ${WECHAT_MINI_PROGRAM_APP_ID:}

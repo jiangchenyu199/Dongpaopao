@@ -1,7 +1,7 @@
 package com.cy.handler;
 
 import com.alibaba.fastjson2.JSONObject;
-import com.cy.service.app.MessageService;
+import com.cy.service.MessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
