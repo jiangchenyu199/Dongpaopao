@@ -23,4 +23,18 @@ public class SchoolServiceImpl implements SchoolService {
     public R search(String keyword) {
         return R.success(schoolMapper.selectList(new LambdaQueryWrapper<School>().like(School::getSname, keyword)));
     }
+
+    @Override
+    public void saveSchool(School school) {
+        if (school.getSid() == null) {
+            schoolMapper.insert(school);
+        } else {
+            schoolMapper.updateById(school);
+        }
+    }
+
+    @Override
+    public void removeSchool(Integer sid) {
+        schoolMapper.deleteById(sid);
+    }
 }

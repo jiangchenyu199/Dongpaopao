@@ -91,19 +91,23 @@
     </select>
 
     <select id="getAdminOrderDetail" resultType="com.alibaba.fastjson2.JSONObject">
-        SELECT o.oid as orderNo,
+        SELECT o.oid,
             xdr_user.nickname as xdr, xdr_user.uid as xdrId,
             jdr_user.nickname as jdr, jdr_user.uid as jdrId,
             o.amount, o.rating,
-            order_status.description as status, order_status.color,
+            o.status,
+            order_status.description as statusDesc,
+            order_status.color,
+            order_type.type_name as typeName,
             jdr_user.phone as phone,
             addr.detail as address,
             o.create_time as createTime,
-            o.accept_time as payTime,
-            o.expect_time as shipTime,
-            o.complete_time as finishTime
+            o.accept_time as acceptTime,
+            o.expect_time as expectTime,
+            o.complete_time as completeTime
         FROM `order` o
         LEFT JOIN order_status ON o.status = order_status.status
+        LEFT JOIN order_type ON o.order_type_id = order_type.order_type_id
         LEFT JOIN user xdr_user ON o.xdr = xdr_user.uid
         LEFT JOIN user jdr_user ON o.jdr = jdr_user.uid
         LEFT JOIN address addr ON o.aid = addr.aid

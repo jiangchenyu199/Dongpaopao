@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>用户管理</span>
-          <el-button type="primary" :icon="Refresh" @click="loadUsers">刷新</el-button>
+          <el-button type="primary" :icon="Refresh" :loading="loading" @click="loadUsers">刷新</el-button>
         </div>
       </template>
       <div class="filter-row">
