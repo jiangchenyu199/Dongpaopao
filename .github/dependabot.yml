@@ -16,6 +16,7 @@ updates:
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
       - dependency-name: "org.mybatis.spring.boot:mybatis-spring-boot-starter"
       - dependency-name: "me.paulschwarz:spring-dotenv"
+      - dependency-name: "software.amazon.awssdk:s3"
 
   - package-ecosystem: "npm"
     directory: "/admin"
