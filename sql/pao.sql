@@ -224,3 +224,28 @@ CREATE TABLE `sys_user_role` (
   `role_id` bigint NOT NULL COMMENT '角色ID',
   PRIMARY KEY (`user_id`, `role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色关联';
+
+CREATE TABLE `app_splash` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `logo_url` varchar(500) DEFAULT NULL COMMENT '开屏 Logo 图片地址',
+  `slogan` varchar(200) DEFAULT NULL COMMENT '开屏文案',
+  `background_color` varchar(20) DEFAULT '#f9f9f9' COMMENT '背景色',
+  `primary_color` varchar(20) DEFAULT '#666666' COMMENT '主色（loading、次要文字）',
+  `slogan_font_size` int DEFAULT NULL COMMENT '文案字号（px），空则用客户端默认',
+  `slogan_color` varchar(20) DEFAULT NULL COMMENT '文案颜色，空则用 primary_color',
+  `show_copyright` tinyint NOT NULL DEFAULT 1 COMMENT '0 隐藏 1 显示底部版权',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0 停用 1 启用',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='App 开屏配置';
+
+CREATE TABLE `app_notice` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `content` varchar(500) NOT NULL COMMENT '通知内容',
+  `sort` int NOT NULL DEFAULT 0 COMMENT '排序，越小越靠前',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0 停用 1 启用',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_app_notice_status_sort` (`status`, `sort`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='App 滚动通知';

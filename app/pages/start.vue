@@ -1,19 +1,24 @@
 <template>
-	<view class="container">
+	<view class="container" :style="{ backgroundColor: splashConfig.backgroundColor || '#f9f9f9' }">
 		<view class="brand-area">
-			<image class="logo" src="https://ai-public.mastergo.com/ai/img_res/c7241bce76bce134b3f269645a42162c.jpg"
-				mode="aspectFit" />
-			<text class="slogan">让科技改变生活</text>
+			<image v-if="splashConfig.logoUrl" class="logo" :src="splashConfig.logoUrl" mode="aspectFit" />
+			<text
+				class="slogan"
+				:style="{
+					fontSize: (splashConfig.sloganFontSize || 16) + 'px',
+					color: splashConfig.sloganColor || splashConfig.primaryColor || '#666'
+				}"
+			>{{ splashConfig.slogan || '让科技改变生活' }}</text>
 		</view>
 
 		<view class="loading-area">
 			<view class="loading-animation">
-				<uni-icons type="spinner-cycle" size="40" color="#666" />
+				<uni-icons type="spinner-cycle" size="40" :color="splashConfig.primaryColor || '#666'" />
 			</view>
-			<text class="loading-text">{{ loadingText }}</text>
+			<text class="loading-text" :style="{ color: splashConfig.primaryColor || '#999' }">{{ loadingText }}</text>
 		</view>
 
-		<view class="footer">
+		<view v-if="splashConfig.showCopyright !== 0" class="footer">
 			<text class="copyright">©2025 科技公司 版权所有</text>
 		</view>
 	</view>
@@ -22,39 +27,70 @@
 <script lang="ts" setup>
 	import { onLoad } from '@dcloudio/uni-app'
 	import request from '@/utils/request.js'
-	import {
-		useUserStore
-	} from '@/stores/user.js'
-	import { ref } from 'vue'
+	import { useUserStore } from '@/stores/user.js'
+	import { ref, reactive } from 'vue'
 
 	const loadingText = ref("正在初始化应用...")
+	const splashConfig = reactive({
+		logoUrl: '',
+		slogan: '',
+		backgroundColor: '#f9f9f9',
+		primaryColor: '#666666',
+		sloganFontSize: null as number | null,
+		sloganColor: '',
+		showCopyright: 1
+	})
 
 	onLoad(() => {
-		const user = useUserStore()
-		uni.login({
-			success: (res) => {
-				request({
-					url: '/auth/login',
-					data: {
-						code: res.code
-					},
-					timeout: 3000,
-					failed: () => {
-						loadingText.value = "当前网络不通畅，请稍后重试"
-					}
-				}).then((res) => {
-					if (res.errCode === 0) {
-						user.setUserInfo(res.data)
-						uni.switchTab({
-							url: "/pages/index/index"
+		try {
+			request({ url: '/app/splash' }).then((res: any) => {
+				const d = res?.data
+				if (d) {
+					splashConfig.logoUrl = d.logoUrl || ''
+					splashConfig.slogan = d.slogan || ''
+					splashConfig.backgroundColor = d.backgroundColor || '#f9f9f9'
+					splashConfig.primaryColor = d.primaryColor || '#666666'
+					splashConfig.sloganFontSize = d.sloganFontSize ?? null
+					splashConfig.sloganColor = d.sloganColor || ''
+					splashConfig.showCopyright = d.showCopyright ?? 1
+				}
+			}).catch(() => {})
+
+			const user = useUserStore()
+			uni.login({
+				success: (res) => {
+					try {
+						request({
+							url: '/auth/login',
+							data: { code: res.code },
+							timeout: 3000,
+							failed: () => {
+								loadingText.value = "当前网络不通畅，请稍后重试"
+							}
+						}).then((res: any) => {
+							if (res.errCode === 0) {
+								user.setUserInfo(res.data)
+								uni.switchTab({ url: "/pages/index/index" })
+							} else {
+								loadingText.value = res.msg || '登录失败，请重试'
+							}
+						}).catch(() => {
+							loadingText.value = '登录失败，请重试'
 						})
-					} else {
-						// errCode 11 等错误：request.js 已 showToast，此处更新加载文案
-						loadingText.value = res.msg || '登录失败，请重试'
+					} catch (e) {
+						loadingText.value = '登录异常，请重试'
+						console.error('login success callback:', e)
 					}
-				})
-			}
-		})
+				},
+				fail: (err) => {
+					loadingText.value = '微信登录失败，请重试'
+					console.error('uni.login fail:', err)
+				}
+			})
+		} catch (e) {
+			loadingText.value = '初始化异常，请重试'
+			console.error('start onLoad:', e)
+		}
 	})
 </script>
 
@@ -69,7 +105,6 @@
 		align-items: center;
 		justify-content: center;
 		height: 100%;
-		background-color: #f9f9f9;
 	}
 
 	.brand-area {
@@ -88,8 +123,6 @@
 	}
 
 	.slogan {
-		font-size: 16px;
-		color: #666;
 		margin-top: 20rpx;
 	}
 
@@ -111,7 +144,6 @@
 
 	.loading-text {
 		font-size: 14px;
-		color: #999;
 	}
 
 	.footer {
@@ -129,12 +161,7 @@
 	}
 
 	@keyframes rotate {
-		from {
-			transform: rotate(0deg);
-		}
-
-		to {
-			transform: rotate(360deg);
-		}
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
 	}
 </style>

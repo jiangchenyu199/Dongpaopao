@@ -6,7 +6,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -15,7 +14,6 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class AdminAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
@@ -58,7 +56,6 @@ public class AdminAuthFilter extends OncePerRequestFilter {
             request.setAttribute("adminUserId", userId);
             filterChain.doFilter(request, response);
         } catch (Exception e) {
-            log.warn("admin auth parse token fail", e);
             sendUnauthorized(response, "登录无效");
         }
     }

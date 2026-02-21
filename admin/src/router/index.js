@@ -60,6 +60,18 @@ const routes = [
         name: 'Admins',
         component: () => import('../views/system/Admins.vue'),
         meta: { title: '后台账号管理' }
+      },
+      {
+        path: 'operate/splash',
+        name: 'Splash',
+        component: () => import('../views/operate/Splash.vue'),
+        meta: { title: '开屏设置' }
+      },
+      {
+        path: 'operate/notices',
+        name: 'Notices',
+        component: () => import('../views/operate/Notices.vue'),
+        meta: { title: '滚动通知' }
       }
     ]
   }

@@ -31,6 +31,16 @@
           </el-icon>
           <span>系统设置</span>
         </el-menu-item>
+        <el-sub-menu index="operate">
+          <template #title>
+            <el-icon>
+              <Document />
+            </el-icon>
+            <span>小程序配置</span>
+          </template>
+          <el-menu-item index="/operate/splash">开屏设置</el-menu-item>
+          <el-menu-item index="/operate/notices">滚动通知</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu index="system">
           <template #title>
             <el-icon>
@@ -63,7 +73,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { House, Box, Setting } from '@element-plus/icons-vue'
+import { House, Box, Setting, Document } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()

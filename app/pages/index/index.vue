@@ -1,5 +1,5 @@
 <template>
-	<u-notice-bar text="系统通知：本系统将于23:00~7:00进行维护。" speed="150" />
+	<u-notice-bar v-if="noticeText" :text="noticeText" speed="150" />
 	<view class="page-container">
 		<!-- Banner区 -->
 		<view class="banner-section">
@@ -36,6 +36,15 @@
 	import BusinessPromotion from '@/components/common/business-promotion.vue'
 
 	const userInfo = useUserStore().info
+
+	// 首页顶部滚动通知
+	const noticeText = ref('')
+	request({ url: '/app/notices' }).then((res: any) => {
+		const list = res?.data || []
+		if (list.length > 0) {
+			noticeText.value = list.map((n: any) => n.content).join('    ')
+		}
+	}).catch(() => {})
 
 	// Banner 图片数据
 	const bannerImages = ref([
