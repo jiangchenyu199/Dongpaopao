@@ -103,10 +103,8 @@ function changeAvatar(res: any) {
 		name: 'file',
 		success(res) {
 			uni.showToast({ title: '上传成功', icon: 'none' });
-			try {
-				const data = JSON.parse((res as any).data);
-				userInfo.avatar = (data.data || '') + '?t=' + Date.now();
-			} catch (_) { }
+			const data = JSON.parse((res as any).data);
+			userInfo.avatar = (data.data || '') + '?t=' + Date.now();
 		}
 	});
 }

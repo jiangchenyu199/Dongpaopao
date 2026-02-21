@@ -35,39 +35,35 @@ public class AdminConfigController {
     @GetMapping("/info")
     public R info() {
         Map<String, Object> info = new HashMap<>();
-        try {
-            SystemInfo si = new SystemInfo();
-            Runtime rt = Runtime.getRuntime();
+        SystemInfo si = new SystemInfo();
+        Runtime rt = Runtime.getRuntime();
 
-            Map<String, Object> memory = new HashMap<>();
-            memory.put("total", formatBytes(rt.totalMemory()));
-            memory.put("used", formatBytes(rt.totalMemory() - rt.freeMemory()));
-            memory.put("max", formatBytes(rt.maxMemory()));
-            info.put("memory", memory);
+        Map<String, Object> memory = new HashMap<>();
+        memory.put("total", formatBytes(rt.totalMemory()));
+        memory.put("used", formatBytes(rt.totalMemory() - rt.freeMemory()));
+        memory.put("max", formatBytes(rt.maxMemory()));
+        info.put("memory", memory);
 
-            Map<String, Object> jvm = new HashMap<>();
-            jvm.put("usage", String.format("%.1f%%", (1 - (double) rt.freeMemory() / rt.totalMemory()) * 100));
-            info.put("jvm", jvm);
+        Map<String, Object> jvm = new HashMap<>();
+        jvm.put("usage", String.format("%.1f%%", (1 - (double) rt.freeMemory() / rt.totalMemory()) * 100));
+        info.put("jvm", jvm);
 
-            CentralProcessor cpu = si.getHardware().getProcessor();
-            Map<String, Object> cpuInfo = new HashMap<>();
-            cpuInfo.put("cores", cpu.getLogicalProcessorCount());
-            cpuInfo.put("model", cpu.getProcessorIdentifier().getName());
-            info.put("cpu", cpuInfo);
+        CentralProcessor cpu = si.getHardware().getProcessor();
+        Map<String, Object> cpuInfo = new HashMap<>();
+        cpuInfo.put("cores", cpu.getLogicalProcessorCount());
+        cpuInfo.put("model", cpu.getProcessorIdentifier().getName());
+        info.put("cpu", cpuInfo);
 
-            Map<String, Object> os = new HashMap<>();
-            os.put("name", si.getOperatingSystem().getManufacturer() + " " + si.getOperatingSystem().getFamily());
-            os.put("version", si.getOperatingSystem().getVersionInfo().getVersion());
-            os.put("arch", System.getProperty("os.arch"));
-            info.put("os", os);
+        Map<String, Object> os = new HashMap<>();
+        os.put("name", si.getOperatingSystem().getManufacturer() + " " + si.getOperatingSystem().getFamily());
+        os.put("version", si.getOperatingSystem().getVersionInfo().getVersion());
+        os.put("arch", System.getProperty("os.arch"));
+        info.put("os", os);
 
-            Map<String, Object> java = new HashMap<>();
-            java.put("version", System.getProperty("java.version"));
-            java.put("vendor", System.getProperty("java.vendor"));
-            info.put("java", java);
-        } catch (Exception e) {
-            // ignore
-        }
+        Map<String, Object> java = new HashMap<>();
+        java.put("version", System.getProperty("java.version"));
+        java.put("vendor", System.getProperty("java.vendor"));
+        info.put("java", java);
         return R.success(info);
     }
 

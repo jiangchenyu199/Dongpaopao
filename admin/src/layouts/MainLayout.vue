@@ -31,6 +31,15 @@
           </el-icon>
           <span>系统设置</span>
         </el-menu-item>
+        <el-sub-menu index="system">
+          <template #title>
+            <el-icon>
+              <Setting />
+            </el-icon>
+            <span>系统管理</span>
+          </template>
+          <el-menu-item index="/system/roles">角色管理</el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
     <el-container direction="vertical" class="main-wrap">
@@ -39,7 +48,7 @@
           <el-text size="large" tag="b">{{ pageTitle }}</el-text>
         </div>
         <div class="header-right">
-          <el-text type="info" size="small">管理员</el-text>
+          <el-text type="info" size="small">{{ adminNickname }}</el-text>
           <el-button type="danger" link size="small" @click="handleLogout">退出</el-button>
         </div>
       </el-header>
@@ -61,8 +70,19 @@ const router = useRouter()
 const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta?.title ?? '首页')
 
+const adminNickname = computed(() => {
+  try {
+    const u = localStorage.getItem('admin_user')
+    return u ? (JSON.parse(u).nickname || '管理员') : '管理员'
+  } catch {
+    return '管理员'
+  }
+})
+
 const handleLogout = () => {
   localStorage.removeItem('admin_token')
+  localStorage.removeItem('admin_user')
+  localStorage.removeItem('admin_menus')
   router.push('/login')
 }
 </script>

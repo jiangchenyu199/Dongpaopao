@@ -6,9 +6,6 @@ import com.cy.service.SchoolService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * 管理端学校增删改查
- */
 @RestController
 @RequestMapping("/admin/school")
 @RequiredArgsConstructor

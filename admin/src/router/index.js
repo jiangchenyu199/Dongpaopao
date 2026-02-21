@@ -48,6 +48,12 @@ const routes = [
         name: 'Settings',
         component: () => import('../views/Settings.vue'),
         meta: { title: '系统设置' }
+      },
+      {
+        path: 'system/roles',
+        name: 'Roles',
+        component: () => import('../views/system/Roles.vue'),
+        meta: { title: '角色管理' }
       }
     ]
   }

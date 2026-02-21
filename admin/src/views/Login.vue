@@ -34,7 +34,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock } from '@element-plus/icons-vue'
-import { login } from '@/api/login'
+import { login, getInfo } from '@/api/login'
 
 const router = useRouter()
 const formRef = ref(null)
@@ -60,6 +60,15 @@ const handleLogin = async () => {
       const token = res?.data?.token
       if (token) {
         localStorage.setItem('admin_token', token)
+        try {
+          const infoRes = await getInfo()
+          const info = infoRes?.data
+          if (info) {
+            localStorage.setItem('admin_user', JSON.stringify(info.user))
+            localStorage.setItem('admin_menus', JSON.stringify(info.menus || []))
+          }
+        } catch {
+        }
         router.push('/home')
       }
     } catch {

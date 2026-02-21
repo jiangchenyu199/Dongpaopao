@@ -7,3 +7,10 @@ export function login(username, password) {
     data: { username, password }
   })
 }
+
+export function getInfo() {
+  return request({
+    url: '/admin/getInfo',
+    method: 'get'
+  })
+}
