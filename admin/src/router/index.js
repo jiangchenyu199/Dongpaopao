@@ -54,6 +54,12 @@ const routes = [
         name: 'Roles',
         component: () => import('../views/system/Roles.vue'),
         meta: { title: '角色管理' }
+      },
+      {
+        path: 'system/admins',
+        name: 'Admins',
+        component: () => import('../views/system/Admins.vue'),
+        meta: { title: '后台账号管理' }
       }
     ]
   }

@@ -9,8 +9,6 @@ import lombok.Data;
 @TableName("sys_user_role")
 public class SysUserRole {
 
-    private Long id;
-
     private Long userId;
 
     private Long roleId;

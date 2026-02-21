@@ -39,6 +39,7 @@
             <span>系统管理</span>
           </template>
           <el-menu-item index="/system/roles">角色管理</el-menu-item>
+          <el-menu-item index="/system/admins">后台账号管理</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
