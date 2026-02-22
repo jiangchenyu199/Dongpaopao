@@ -53,38 +53,24 @@
 		'https://ai-public.mastergo.com/ai/img_res/120fce42fd9e45edcd603cc750ec7054.jpg'
 	]);
 
-	// 商家推广数据
-	const businessList = ref([
-		{
-			id: '1',
-			name: '快捷搬家服务',
-			description: '全市范围内专业搬家，2小时内响应，价格透明',
-			image: 'https://img.xjh.me/random_img.php?type=bg&ctype=nature&return=302',
-			tags: ['专业', '快捷', '实惠'],
-			minPrice: '¥100起'
-		},
-		{
-			id: '2',
-			name: '洁净家政保洁',
-			description: '专业保洁团队，使用环保清洁剂，让家焕然一新',
-			image: 'https://img.xjh.me/random_img.php?type=bg&ctype=nature&return=302',
-			tags: ['专业', '环保', '细致'],
-			minPrice: '¥80起'
-		},
-		{
-			id: '3',
-			name: '家电维修专家',
-			description: '专业维修各类家电，30年经验技师，上门服务',
-			image: 'https://img.xjh.me/random_img.php?type=bg&ctype=nature&return=302',
-			tags: ['专业', '快速', '保修'],
-			minPrice: '¥50起'
-		}
-	]);
+	// 商家推广数据（从接口获取）
+	const businessList = ref<any[]>([]);
 
 	// Uniapp 生命周期
 	onShow(() => {
 		fetchServiceList();
+		fetchBusinessPromotion();
 	})
+
+	function fetchBusinessPromotion() {
+		request({ url: '/app/business-promotion' }).then((res: any) => {
+			const list = res?.data || [];
+			// 接口返回 id 为 number，组件可接受；如需字符串可: list.map((b: any) => ({ ...b, id: String(b.id) }))
+			businessList.value = list;
+		}).catch(() => {
+			businessList.value = [];
+		});
+	}
 
 	// 功能图标数据
 	const functionList = ref([]);

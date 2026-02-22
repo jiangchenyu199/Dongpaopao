@@ -40,6 +40,7 @@
           </template>
           <el-menu-item index="/operate/splash">开屏设置</el-menu-item>
           <el-menu-item index="/operate/notices">滚动通知</el-menu-item>
+          <el-menu-item index="/operate/business-promotion">商家推广</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="system">
           <template #title>

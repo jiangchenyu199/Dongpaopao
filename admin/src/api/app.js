@@ -37,9 +37,32 @@ export function deleteNotice(id) {
   })
 }
 
-export function uploadFile(file) {
+export function getBusinessPromotionList() {
+  return request({
+    url: '/admin/app/business-promotion/list',
+    method: 'get'
+  })
+}
+
+export function saveBusinessPromotion(data) {
+  return request({
+    url: '/admin/app/business-promotion/save',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteBusinessPromotion(id) {
+  return request({
+    url: `/admin/app/business-promotion/delete/${id}`,
+    method: 'delete'
+  })
+}
+
+export function uploadFile(file, folder) {
   const formData = new FormData()
   formData.append('file', file)
+  if (folder) formData.append('folder', folder)
   return request({
     url: '/admin/upload',
     method: 'post',

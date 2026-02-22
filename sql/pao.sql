@@ -249,3 +249,18 @@ CREATE TABLE `app_notice` (
   PRIMARY KEY (`id`),
   KEY `idx_app_notice_status_sort` (`status`, `sort`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='App 滚动通知';
+
+CREATE TABLE `app_business_promotion` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `name` varchar(100) NOT NULL COMMENT '商家名称',
+  `description` varchar(500) DEFAULT NULL COMMENT '描述',
+  `image` varchar(500) DEFAULT NULL COMMENT '封面图 URL',
+  `tags` varchar(500) DEFAULT NULL COMMENT '标签，JSON 数组如 ["专业","快捷"]',
+  `min_price` varchar(50) DEFAULT NULL COMMENT '最低价展示，如 ¥100起',
+  `sort` int NOT NULL DEFAULT 0 COMMENT '排序，越小越靠前',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0 停用 1 启用',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_app_business_promotion_status_sort` (`status`, `sort`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='首页商家推广';

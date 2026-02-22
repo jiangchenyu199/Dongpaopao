@@ -20,17 +20,22 @@ public class AdminUploadController {
     private final OSSConfig ossConfig;
 
     private static final String BUCKET = "pao";
-    private static final String PREFIX_SPLASH = "splash/";
+    private static final java.util.Set<String> ALLOWED_FOLDERS = java.util.Set.of("splash", "business-promotion");
 
     @PostMapping
-    public R upload(@RequestParam("file") MultipartFile file) {
+    public R upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "folder", required = false, defaultValue = "splash") String folder) {
         if (file == null || file.isEmpty()) {
             return R.error("请选择文件");
+        }
+        if (!ALLOWED_FOLDERS.contains(folder)) {
+            folder = "splash";
         }
         String originalFilename = file.getOriginalFilename();
         String ext = originalFilename != null && originalFilename.contains(".")
                 ? originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
-        String key = PREFIX_SPLASH + UUID.randomUUID().toString().replace("-", "") + ext;
+        String key = folder + "/" + UUID.randomUUID().toString().replace("-", "") + ext;
         try {
             ensureBucketExists();
             byte[] bytes = file.getBytes();

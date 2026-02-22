@@ -72,6 +72,12 @@ const routes = [
         name: 'Notices',
         component: () => import('../views/operate/Notices.vue'),
         meta: { title: '滚动通知' }
+      },
+      {
+        path: 'operate/business-promotion',
+        name: 'BusinessPromotion',
+        component: () => import('../views/operate/BusinessPromotion.vue'),
+        meta: { title: '商家推广' }
       }
     ]
   }
