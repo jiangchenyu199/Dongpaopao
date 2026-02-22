@@ -1,7 +1,8 @@
 package com.cy.controller;
 
 import com.cy.common.R;
-import com.cy.config.OSSConfig;
+import com.cy.config.S3Config;
+import com.cy.constant.StorageConstant;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,20 +18,17 @@ import java.util.UUID;
 public class AdminUploadController {
 
     private final S3Client s3Client;
-    private final OSSConfig ossConfig;
-
-    private static final String BUCKET = "pao";
-    private static final java.util.Set<String> ALLOWED_FOLDERS = java.util.Set.of("splash", "business-promotion");
+    private final S3Config s3Config;
 
     @PostMapping
     public R upload(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "folder", required = false, defaultValue = "splash") String folder) {
+            @RequestParam(value = "folder", required = false, defaultValue = StorageConstant.FOLDER_SPLASH) String folder) {
         if (file == null || file.isEmpty()) {
             return R.error("请选择文件");
         }
-        if (!ALLOWED_FOLDERS.contains(folder)) {
-            folder = "splash";
+        if (!StorageConstant.FOLDER_SPLASH.equals(folder) && !StorageConstant.FOLDER_BUSINESS_PROMOTION.equals(folder)) {
+            folder = StorageConstant.FOLDER_SPLASH;
         }
         String originalFilename = file.getOriginalFilename();
         String ext = originalFilename != null && originalFilename.contains(".")
@@ -40,13 +38,13 @@ public class AdminUploadController {
             ensureBucketExists();
             byte[] bytes = file.getBytes();
             RequestBody body = RequestBody.fromBytes(bytes);
-            PutObjectRequest request = PutObjectRequest.builder().bucket(BUCKET).key(key).build();
+            PutObjectRequest request = PutObjectRequest.builder().bucket(StorageConstant.BUCKET).key(key).build();
             s3Client.putObject(request, body);
-            String base = ossConfig.getEndpoint();
+            String base = s3Config.getEndpoint();
             if (base != null && base.endsWith("/")) {
                 base = base.substring(0, base.length() - 1);
             }
-            String url = (base != null ? base : "http://localhost:9000") + "/" + BUCKET + "/" + key;
+            String url = (base != null ? base : StorageConstant.DEFAULT_ENDPOINT) + "/" + StorageConstant.BUCKET + "/" + key;
             return R.success(url);
         } catch (Exception e) {
             return R.error("上传失败: " + e.getMessage());
@@ -55,7 +53,7 @@ public class AdminUploadController {
 
     private void ensureBucketExists() {
         try {
-            s3Client.createBucket(b -> b.bucket(BUCKET));
+            s3Client.createBucket(b -> b.bucket(StorageConstant.BUCKET));
         } catch (Exception ignored) {
         }
     }

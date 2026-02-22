@@ -8,12 +8,12 @@ server:
     certificate-private-key: ${SERVER_SSL_CERTIFICATE_PRIVATE_KEY:./certs/key.pem}
     enabled: ${SERVER_SSL_ENABLED:true}
 
-# OSS配置，支持环境变量覆盖
-oss:
-  access-key: ${OSS_ACCESS_KEY:rustfsadmin}
-  secret-key: ${OSS_SECRET_KEY:rustfsadmin}
-  endpoint: ${OSS_ENDPOINT:http://localhost:9000}
-  region: ${OSS_REGION:cn-north-1}
+# S3 兼容对象存储，支持环境变量覆盖
+s3:
+  access-key: ${S3_ACCESS_KEY:rustfsadmin}
+  secret-key: ${S3_SECRET_KEY:rustfsadmin}
+  endpoint: ${S3_ENDPOINT:http://localhost:9000}
+  region: ${S3_REGION:cn-north-1}
 
 # JWT配置（管理端登录鉴权）
 jwt:

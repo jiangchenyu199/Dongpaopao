@@ -13,10 +13,9 @@ import software.amazon.awssdk.services.s3.S3Client;
 import java.net.URI;
 
 @Configuration
-@ConfigurationProperties(prefix = "oss")
+@ConfigurationProperties(prefix = "s3")
 @Data
-public class OSSConfig {
-    // 所有配置项都通过配置文件注入
+public class S3Config {
     private String accessKey;
     private String secretKey;
     private String endpoint = "http://localhost:9000";
@@ -25,7 +24,7 @@ public class OSSConfig {
     @Bean
     public S3Client s3Client() {
         if (accessKey == null || accessKey.trim().isEmpty() || secretKey == null || secretKey.trim().isEmpty()) {
-            throw new IllegalArgumentException("OSS access key and secret key must be configured and cannot be blank");
+            throw new IllegalArgumentException("S3 access key and secret key must be configured and cannot be blank");
         }
         return S3Client.builder()
                 .endpointOverride(URI.create(endpoint))
