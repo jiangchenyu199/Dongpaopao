@@ -264,3 +264,14 @@ CREATE TABLE `app_business_promotion` (
   PRIMARY KEY (`id`),
   KEY `idx_app_business_promotion_status_sort` (`status`, `sort`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='首页商家推广';
+
+CREATE TABLE `app_banner` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `image` varchar(500) NOT NULL COMMENT '图片 URL',
+  `sort` int NOT NULL DEFAULT 0 COMMENT '排序',
+  `status` tinyint NOT NULL DEFAULT 1 COMMENT '0停用 1启用',
+  `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_app_banner_status_sort` (`status`, `sort`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='首页轮播';

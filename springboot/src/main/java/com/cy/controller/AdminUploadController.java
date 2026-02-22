@@ -27,7 +27,8 @@ public class AdminUploadController {
         if (file == null || file.isEmpty()) {
             return R.error("请选择文件");
         }
-        if (!StorageConstant.FOLDER_SPLASH.equals(folder) && !StorageConstant.FOLDER_BUSINESS_PROMOTION.equals(folder)) {
+        if (!StorageConstant.FOLDER_SPLASH.equals(folder) && !StorageConstant.FOLDER_BUSINESS_PROMOTION.equals(folder)
+                && !StorageConstant.FOLDER_BANNER.equals(folder)) {
             folder = StorageConstant.FOLDER_SPLASH;
         }
         String originalFilename = file.getOriginalFilename();

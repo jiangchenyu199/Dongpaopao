@@ -7,6 +7,7 @@ import com.cy.dto.AppBusinessPromotionVO;
 import com.cy.entity.AppBusinessPromotion;
 import com.cy.entity.AppNotice;
 import com.cy.entity.AppSplash;
+import com.cy.service.AppBannerService;
 import com.cy.service.AppBusinessPromotionService;
 import com.cy.service.AppNoticeService;
 import com.cy.service.AppSplashService;
@@ -28,6 +29,7 @@ public class AppConfigController {
     private final AppSplashService appSplashService;
     private final AppNoticeService appNoticeService;
     private final AppBusinessPromotionService appBusinessPromotionService;
+    private final AppBannerService appBannerService;
     private final ObjectMapper objectMapper;
 
     @GetMapping("/splash")
@@ -65,5 +67,10 @@ public class AppConfigController {
             voList.add(vo);
         }
         return R.success(voList);
+    }
+
+    @GetMapping("/banner")
+    public R banner() {
+        return R.success(appBannerService.listForApp());
     }
 }

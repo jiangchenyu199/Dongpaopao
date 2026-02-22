@@ -59,6 +59,28 @@ export function deleteBusinessPromotion(id) {
   })
 }
 
+export function getBannerList() {
+  return request({
+    url: '/admin/app/banner/list',
+    method: 'get'
+  })
+}
+
+export function saveBanner(data) {
+  return request({
+    url: '/admin/app/banner/save',
+    method: 'post',
+    data
+  })
+}
+
+export function deleteBanner(id) {
+  return request({
+    url: `/admin/app/banner/delete/${id}`,
+    method: 'delete'
+  })
+}
+
 export function uploadFile(file, folder) {
   const formData = new FormData()
   formData.append('file', file)

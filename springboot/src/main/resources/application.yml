@@ -34,6 +34,10 @@ spring:
   profiles:
     active:
       - ${SPRING_PROFILES_ACTIVE:dev}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
   task:
     scheduling:
       pool:

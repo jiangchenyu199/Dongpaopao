@@ -46,36 +46,39 @@
 		}
 	}).catch(() => {})
 
-	// Banner 图片数据
-	const bannerImages = ref([
-		'https://ai-public.mastergo.com/ai/img_res/6945a6b7e8506df1abcd0efce30213d7.jpg',
-		'https://ai-public.mastergo.com/ai/img_res/ea7587e8643368749c2e819938953839.jpg',
-		'https://ai-public.mastergo.com/ai/img_res/120fce42fd9e45edcd603cc750ec7054.jpg'
-	]);
+	// Banner 数据
+	const bannerImages = ref<any[]>([]);
 
-	// 商家推广数据（从接口获取）
+	// 商家推广数据
 	const businessList = ref<any[]>([]);
 
 	// Uniapp 生命周期
 	onShow(() => {
 		fetchServiceList();
 		fetchBusinessPromotion();
+		fetchBanner();
 	})
+
+	function fetchBanner() {
+		request({ url: '/app/banner' }).then((res: any) => {
+			const list = res?.data || [];
+			bannerImages.value = list.map((b: any) => ({ image: b.image, id: b.id }));
+		}).catch(() => {
+			bannerImages.value = [];
+		});
+	}
 
 	function fetchBusinessPromotion() {
 		request({ url: '/app/business-promotion' }).then((res: any) => {
 			const list = res?.data || [];
-			// 接口返回 id 为 number，组件可接受；如需字符串可: list.map((b: any) => ({ ...b, id: String(b.id) }))
 			businessList.value = list;
 		}).catch(() => {
 			businessList.value = [];
 		});
 	}
 
-	// 功能图标数据
 	const functionList = ref([]);
 
-	// 获取服务列表
 	const fetchServiceList = async () => {
 		const res = await request({
 			url: '/order-type/list'
@@ -94,22 +97,18 @@
 			});
 	}
 
-	// 商家推广点击处理
 	const handleBusinessClick = (business : any) => {
 		uni.showToast({
 			title: `查看商家: ${business.name}`,
 			icon: 'none'
 		});
-		// 这里可以添加跳转到商家详情页的逻辑
 	};
 
-	// 查看全部商家
 	const handleViewAllBusinesses = () => {
 		uni.showToast({
 			title: '查看全部商家',
 			icon: 'none'
 		});
-		// 这里可以添加跳转到商家列表页的逻辑
 	};
 </script>
 <style>
