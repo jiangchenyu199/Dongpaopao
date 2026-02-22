@@ -7,52 +7,31 @@
       </div>
       <el-menu :default-active="activeMenu" class="sidebar-menu" background-color="#1f2937" text-color="#9ca3af"
         active-text-color="#f59e0b" router>
-        <el-menu-item index="/home">
-          <el-icon>
-            <House />
-          </el-icon>
-          <span>首页</span>
-        </el-menu-item>
-        <el-sub-menu index="business">
-          <template #title>
-            <el-icon>
-              <Box />
+        <template v-for="item in menuTree" :key="item.id">
+          <el-sub-menu v-if="item.children?.length" :index="'sub-' + item.id">
+            <template #title>
+              <el-icon v-if="item.icon && iconMap[item.icon]">
+                <component :is="iconMap[item.icon]" />
+              </el-icon>
+              <span>{{ item.name }}</span>
+            </template>
+            <template v-for="child in item.children" :key="child.id">
+              <el-sub-menu v-if="child.children?.length" :index="'sub-' + child.id">
+                <template #title>{{ child.name }}</template>
+                <el-menu-item v-for="leaf in child.children" :key="leaf.id" :index="leaf.path">
+                  {{ leaf.name }}
+                </el-menu-item>
+              </el-sub-menu>
+              <el-menu-item v-else-if="child.path" :index="child.path">{{ child.name }}</el-menu-item>
+            </template>
+          </el-sub-menu>
+          <el-menu-item v-else-if="item.path" :index="item.path">
+            <el-icon v-if="item.icon && iconMap[item.icon]">
+              <component :is="iconMap[item.icon]" />
             </el-icon>
-            <span>业务管理</span>
-          </template>
-          <el-menu-item index="/orders">订单管理</el-menu-item>
-          <el-menu-item index="/users">用户管理</el-menu-item>
-          <el-menu-item index="/schools">学校管理</el-menu-item>
-          <el-menu-item index="/order-types">订单类型</el-menu-item>
-        </el-sub-menu>
-        <el-menu-item index="/settings">
-          <el-icon>
-            <Setting />
-          </el-icon>
-          <span>系统设置</span>
-        </el-menu-item>
-        <el-sub-menu index="operate">
-          <template #title>
-            <el-icon>
-              <Document />
-            </el-icon>
-            <span>小程序配置</span>
-          </template>
-          <el-menu-item index="/operate/splash">开屏设置</el-menu-item>
-          <el-menu-item index="/operate/notices">滚动通知</el-menu-item>
-          <el-menu-item index="/operate/banner">首页轮播</el-menu-item>
-          <el-menu-item index="/operate/business-promotion">商家推广</el-menu-item>
-        </el-sub-menu>
-        <el-sub-menu index="system">
-          <template #title>
-            <el-icon>
-              <Setting />
-            </el-icon>
-            <span>系统管理</span>
-          </template>
-          <el-menu-item index="/system/roles">角色管理</el-menu-item>
-          <el-menu-item index="/system/admins">后台账号管理</el-menu-item>
-        </el-sub-menu>
+            <span>{{ item.name }}</span>
+          </el-menu-item>
+        </template>
       </el-menu>
     </el-aside>
     <el-container direction="vertical" class="main-wrap">
@@ -73,12 +52,37 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { House, Box, Setting, Document } from '@element-plus/icons-vue'
+import { getInfo } from '@/api/login'
 
 const route = useRoute()
 const router = useRouter()
+
+const iconMap = { House, Box, Setting, Document }
+
+const menuTree = ref([])
+function loadMenus() {
+  try {
+    const raw = localStorage.getItem('admin_menus')
+    menuTree.value = raw ? JSON.parse(raw) : []
+  } catch {
+    menuTree.value = []
+  }
+}
+
+onMounted(() => {
+  loadMenus()
+  if (menuTree.value.length === 0) {
+    getInfo().then(res => {
+      if (res?.data?.menus) {
+        localStorage.setItem('admin_menus', JSON.stringify(res.data.menus))
+        menuTree.value = res.data.menus
+      }
+    }).catch(() => {})
+  }
+})
 
 const activeMenu = computed(() => route.path)
 const pageTitle = computed(() => route.meta?.title ?? '首页')

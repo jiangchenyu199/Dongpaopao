@@ -94,14 +94,41 @@ const router = createRouter({
   routes
 })
 
+function getAllowedPaths() {
+  try {
+    const raw = localStorage.getItem('admin_menus')
+    if (!raw) return ['/home']
+    const tree = JSON.parse(raw)
+    const paths = []
+    function collect(nodes) {
+      if (!Array.isArray(nodes)) return
+      for (const n of nodes) {
+        if (n.path) paths.push(n.path)
+        if (n.children?.length) collect(n.children)
+      }
+    }
+    collect(tree)
+    return paths.length ? paths : ['/home']
+  } catch {
+    return ['/home']
+  }
+}
+
 router.beforeEach((to, from, next) => {
   if (to.meta?.public) return next()
   const token = localStorage.getItem('admin_token')
   if (!token && to.path !== '/login') {
     next('/login')
-  } else {
-    next()
+    return
   }
+  if (token && to.path !== '/login' && to.path !== '/') {
+    const allowed = getAllowedPaths()
+    if (!allowed.includes(to.path)) {
+      next('/home')
+      return
+    }
+  }
+  next()
 })
 
 export default router
