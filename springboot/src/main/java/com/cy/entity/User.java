@@ -27,7 +27,10 @@ public class User {
 
     private int sex;
 
-    private int sid;
+    /** 
+     * 学校 id
+     */
+    private Integer sid;
 
     private String phone;
 

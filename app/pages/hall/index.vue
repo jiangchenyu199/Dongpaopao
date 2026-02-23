@@ -11,8 +11,14 @@
 
 		</u-sticky>
 
+		<!-- 未选学校时引导 -->
+		<view v-if="!hasSchool" class="school-tip">
+			<u-empty mode="data" text="请先选择学校" />
+			<text class="school-tip-desc">仅可查看与接取同校订单</text>
+			<u-button type="primary" text="去设置学校" customStyle="margin-top: 24rpx;" @click="goProfile" />
+		</view>
 		<!-- 订单列表 -->
-		<view class="order-list" @scrolltolower="handleLoadMore">
+		<view v-else class="order-list" @scrolltolower="handleLoadMore">
 			<order-item v-for="order in formattedOrders" :key="order.oid" :order="order"
 				@click="navigateToDetail(order)" />
 
@@ -43,6 +49,15 @@
 	const loadMoreStatus = ref('loadmore');
 
 	const userInfo = useUserStore().info
+
+	const hasSchool = computed(() => {
+		const s = userInfo.sid
+		return s != null && s !== 0 && s !== '0'
+	})
+
+	function goProfile() {
+		uni.navigateTo({ url: '/pages/user/profile/profile' })
+	}
 
 	// 类型名称到类型代码的映射
 	const typeNameToOrderType = {
@@ -93,6 +108,7 @@
 
 	// 加载订单列表
 	const loadOrders = async (orderTypeId : string, isLoadMore = false) => {
+		if (!hasSchool.value) return
 		if (!isLoadMore) {
 			loading.value = true;
 			pageNum.value = 1;
@@ -187,12 +203,12 @@
 
 	/* 页面展示 */
 	onShow(async () => {
-		// 确保服务列表已加载，然后加载对应分类的订单
+		if (!hasSchool.value) return
 		if (serviceList.value.length === 0) {
 			await loadServices();
 		}
 		const currentService = serviceList.value[currentTab.value];
-		loadOrders(currentService.orderTypeId);
+		loadOrders(currentService?.orderTypeId);
 	});
 </script>
 
@@ -204,6 +220,19 @@
 		background-color: #f5f5f5;
 	}
 
+	.school-tip {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 48rpx;
+	}
+	.school-tip-desc {
+		font-size: 28rpx;
+		color: #999;
+		margin-top: 16rpx;
+	}
 	.order-list {
 		flex: 1;
 		overflow-y: auto;

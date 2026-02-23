@@ -12,7 +12,7 @@ import java.util.List;
 @Mapper
 public interface OrderMapper extends BaseMapper<Order> {
 
-    Page<JSONObject> getHallOrders(Page<JSONObject> page, @Param("uid") String uid, @Param("orderTypeId") String orderTypeId);
+    Page<JSONObject> getHallOrders(Page<JSONObject> page, @Param("uid") String uid, @Param("orderTypeId") String orderTypeId, @Param("sid") Integer sid);
 
     List<JSONObject> listMyOrders(@Param("uid") String uid, @Param("role") String role,
                                    @Param("status") String status, @Param("type") String type);

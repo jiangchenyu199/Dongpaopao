@@ -37,6 +37,7 @@ CREATE TABLE `message` (
 CREATE TABLE `order` (
   `oid` varchar(32) NOT NULL COMMENT '订单id',
   `xdr` varchar(50) DEFAULT NULL COMMENT '下单人',
+  `sid` int DEFAULT NULL COMMENT '学校id',
   `create_time` datetime DEFAULT (now()) COMMENT '下单时间',
   `expect_time` datetime DEFAULT NULL COMMENT '期望送达时间',
   `order_type_id` varchar(50) DEFAULT NULL COMMENT '订单分类',
@@ -54,8 +55,10 @@ CREATE TABLE `order` (
   KEY `fk_order_address` (`aid`),
   KEY `fk_order_user_jdr` (`jdr`),
   KEY `fk_order_user_xdr` (`xdr`),
+  KEY `fk_order_school` (`sid`),
   KEY `order_order_status_status_fk` (`status`),
-  CONSTRAINT `order_order_status_status_fk` FOREIGN KEY (`status`) REFERENCES `order_status` (`status`)
+  CONSTRAINT `order_order_status_status_fk` FOREIGN KEY (`status`) REFERENCES `order_status` (`status`),
+  CONSTRAINT `fk_order_school` FOREIGN KEY (`sid`) REFERENCES `school` (`sid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单表'
 
 CREATE TABLE `order_status` (

@@ -113,6 +113,12 @@ const validateForm = (formData : any) => {
 
 	/* 下单操作 */
 	const handleSubmit = () => {
+		const s = userStore.info.sid
+		if (s == null || s === 0 || s === '0') {
+			uni.showToast({ title: '请先选择学校', icon: 'none' })
+			setTimeout(() => uni.navigateTo({ url: '/pages/user/profile/profile' }), 1500)
+			return
+		}
 		const formData = getAllFormData();
 
 		formData.uid = userStore.info.uid

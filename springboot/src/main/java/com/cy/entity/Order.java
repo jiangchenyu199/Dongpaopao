@@ -21,6 +21,11 @@ public class Order {
 
     private String xdr;
 
+    /** 
+     * 学校 id
+     */
+    private Integer sid;
+
     /**
      * 创建时间
      */

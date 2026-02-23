@@ -46,6 +46,11 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal totalFee = feeInfo.getBigDecimal("totalAmount");
         String uid = params.getString("uid");
 
+        User user = userMapper.selectById(uid);
+        if (user == null || user.getSid() == null || user.getSid() == 0) {
+            return R.error("请先选择学校");
+        }
+
         if (totalFee == null || totalFee.compareTo(BigDecimal.ZERO) <= 0) {
             return R.error("金额非法");
         }
@@ -61,6 +66,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = new Order();
         order.setXdr(uid);
+        order.setSid(user.getSid());
         order.setOrderTypeId(params.getString("orderTypeId"));
         order.setExpectTime(deliverInfo.getLocalDateTime("expectTime"));
         order.setAid(deliverInfo.getString("aid"));
@@ -90,6 +96,18 @@ public class OrderServiceImpl implements OrderService {
     public R acceptOrder(JSONObject params) {
         String oid = params.getString("oid");
         String uid = params.getString("uid");
+
+        User acceptor = userMapper.selectById(uid);
+        if (acceptor == null || acceptor.getSid() == null || acceptor.getSid() == 0) {
+            return R.error("请先选择学校");
+        }
+        Order order = orderMapper.selectOne(new LambdaQueryWrapper<Order>().eq(Order::getOid, oid));
+        if (order == null) {
+            return R.error("订单不存在");
+        }
+        if (order.getSid() == null || !order.getSid().equals(acceptor.getSid())) {
+            return R.error("仅可接取同校订单");
+        }
 
         int effectRows = orderMapper.update(new LambdaUpdateWrapper<Order>()
                 .set(Order::getStatus, 'J')
@@ -170,8 +188,15 @@ public class OrderServiceImpl implements OrderService {
         if (pageSize == null || pageSize < 1) {
             pageSize = 10;
         }
+        User user = userMapper.selectById(uid);
+        if (user == null || user.getSid() == null || user.getSid() == 0) {
+            Page<JSONObject> empty = new Page<>(pageNum, pageSize);
+            empty.setRecords(new java.util.ArrayList<>());
+            empty.setTotal(0);
+            return R.success(empty);
+        }
         Page<JSONObject> page = new Page<>(pageNum, pageSize);
-        Page<JSONObject> hallOrders = orderMapper.getHallOrders(page, uid, orderTypeId);
+        Page<JSONObject> hallOrders = orderMapper.getHallOrders(page, uid, orderTypeId, user.getSid());
         return R.success(hallOrders);
     }
 
