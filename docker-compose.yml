@@ -2,12 +2,23 @@ services:
   # 后端服务
   backend:
     build: ./springboot
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      S3_ENDPOINT: http://pao-oss:9000
+      S3_PUBLIC_ENDPOINT: http://localhost:9000
+      S3_ACCESS_KEY: rustfsadmin
+      S3_SECRET_KEY: rustfsadmin
     ports:
       - "8181:8181"
     depends_on:
-      - pao-db
-      - pao-redis
-      - pao-oss
+      pao-db:
+        condition: service_healthy
+      pao-redis:
+        condition: service_started
+      pao-oss:
+        condition: service_started
     volumes:
       - ./certs:/certs
     container_name: backend
@@ -22,6 +33,12 @@ services:
     environment:
       MYSQL_DATABASE: pao
       MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
     ports:
       - "3306:3306"
     container_name: pao-db
@@ -44,9 +61,10 @@ services:
 #      - ./certs:/certs
     ports:
       - "9000:9000"
+      - "9001:9001"
     environment:
-      - RUSTFS_ACCESS_KEY=TvzknGD9FEguVOCemRct
-      - RUSTFS_SECRET_KEY=5DPl2ZWXmRLGbfMivOINCu7H8nEcgtSe49AwqoT6
+      - RUSTFS_ACCESS_KEY=rustfsadmin
+      - RUSTFS_SECRET_KEY=rustfsadmin
       - RUSTFS_TLS_PATH=/certs
       - RUSTFS_CONSOLE_ENABLE=true
     container_name: pao-oss

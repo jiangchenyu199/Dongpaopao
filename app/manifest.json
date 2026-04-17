@@ -7,7 +7,7 @@
     "transformPx" : false,
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wxd5b6cda3d4c107ef",
         "setting" : {
             "urlCheck" : false
         },

@@ -14,6 +14,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 
 import java.math.BigDecimal;
 
@@ -54,9 +55,12 @@ public class UserServiceImpl implements UserService {
         ensureBucketExists();
         RequestBody body = RequestBody.fromInputStream(file.getInputStream(), file.getSize());
         s3Client.putObject(builder ->
-                builder.contentType("image/jpeg").bucket(StorageConstant.BUCKET).key(key), body);
+                builder.contentType("image/jpeg")
+                        .bucket(StorageConstant.BUCKET)
+                        .key(key)
+                        .acl(ObjectCannedACL.PUBLIC_READ), body);
 
-        String base = s3Config.getEndpoint();
+        String base = s3Config.getAccessibleEndpoint();
         if (base != null && base.endsWith("/")) {
             base = base.substring(0, base.length() - 1);
         }
@@ -72,6 +76,24 @@ public class UserServiceImpl implements UserService {
     private void ensureBucketExists() {
         try {
             s3Client.createBucket(b -> b.bucket(StorageConstant.BUCKET));
+        } catch (Exception ignored) {
+        }
+        try {
+            s3Client.putBucketPolicy(b -> b.bucket(StorageConstant.BUCKET).policy(
+                    """
+                    {
+                      "Version":"2012-10-17",
+                      "Statement":[
+                        {
+                          "Sid":"PublicReadGetObject",
+                          "Effect":"Allow",
+                          "Principal":"*",
+                          "Action":["s3:GetObject"],
+                          "Resource":["arn:aws:s3:::%s/*"]
+                        }
+                      ]
+                    }
+                    """.formatted(StorageConstant.BUCKET)));
         } catch (Exception ignored) {
         }
     }

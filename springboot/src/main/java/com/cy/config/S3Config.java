@@ -19,6 +19,7 @@ public class S3Config {
     private String accessKey;
     private String secretKey;
     private String endpoint = "http://localhost:9000";
+    private String publicEndpoint;
     private String region = "cn-north-1";
 
     @Bean
@@ -34,5 +35,9 @@ public class S3Config {
                 .forcePathStyle(true)
                 .region(Region.of(region))
                 .build();
+    }
+
+    public String getAccessibleEndpoint() {
+        return (publicEndpoint != null && !publicEndpoint.trim().isEmpty()) ? publicEndpoint : endpoint;
     }
 }

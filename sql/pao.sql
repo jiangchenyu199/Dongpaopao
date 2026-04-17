@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 CREATE TABLE `address` (
   `aid` varchar(36) NOT NULL COMMENT '地址id',
   `uid` varchar(50) NOT NULL COMMENT '用户id',
@@ -7,7 +9,7 @@ CREATE TABLE `address` (
   `is_default` tinyint(1) DEFAULT NULL COMMENT '是否默认地址',
   PRIMARY KEY (`aid`),
   KEY `fk_address_user` (`uid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='地址表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='地址表';
 
 CREATE TABLE `conversation` (
   `cid` varchar(50) NOT NULL COMMENT '会话id',
@@ -19,7 +21,7 @@ CREATE TABLE `conversation` (
   `last_message_read_time` datetime DEFAULT NULL COMMENT '最后一条消息已读时间',
   `status` enum('OPENING','CLOSED') DEFAULT 'OPENING' COMMENT '会话状态',
   PRIMARY KEY (`cid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='会话表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='会话表';
 
 CREATE TABLE `message` (
   `mid` varchar(50) NOT NULL COMMENT '消息id',
@@ -32,7 +34,7 @@ CREATE TABLE `message` (
   `send_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '发送消息时间',
   `read_time` datetime DEFAULT NULL,
   PRIMARY KEY (`mid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='聊天消息表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='聊天消息表';
 
 CREATE TABLE `order` (
   `oid` varchar(32) NOT NULL COMMENT '订单id',
@@ -56,17 +58,21 @@ CREATE TABLE `order` (
   KEY `fk_order_user_jdr` (`jdr`),
   KEY `fk_order_user_xdr` (`xdr`),
   KEY `fk_order_school` (`sid`),
-  KEY `order_order_status_status_fk` (`status`),
-  CONSTRAINT `order_order_status_status_fk` FOREIGN KEY (`status`) REFERENCES `order_status` (`status`),
-  CONSTRAINT `fk_order_school` FOREIGN KEY (`sid`) REFERENCES `school` (`sid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单表'
+  KEY `order_order_status_status_fk` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单表';
 
 CREATE TABLE `order_status` (
   `status` char(1) NOT NULL COMMENT '订单状态',
   `description` varchar(50) DEFAULT NULL COMMENT '描述',
   `color` char(7) NOT NULL DEFAULT '#FFFFFF' COMMENT '十六进制文字颜色',
   PRIMARY KEY (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单状态'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单状态';
+INSERT INTO `order_status` VALUES
+('C','已取消','#3c3f41'),
+('D','待接单','#f08705'),
+('J','进行中','#1da139'),
+('P','有争议','#FF9800'),
+('S','已完成','#41a5ee');
 
 CREATE TABLE `order_type` (
   `order_type_id` varchar(50) NOT NULL COMMENT '服务id',
@@ -77,13 +83,18 @@ CREATE TABLE `order_type` (
   `enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`order_type_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单类型'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='订单类型';
+INSERT INTO `order_type` VALUES
+('1988834352889942018','快递代取','📦','#E3F2FD','[{\"name\": \"location\", \"type\": \"input\", \"label\": \"取件点\", \"required\": true, \"placeholder\": \"请输入取件点\"}, {\"icon\": \"search\", \"name\": \"code\", \"type\": \"input\", \"label\": \"取件号\", \"private\": true, \"required\": true, \"placeholder\": \"请输入取件号\"}, {\"name\": \"remark\", \"type\": \"textarea\", \"label\": \"备注信息\", \"required\": false, \"maxLength\": 200, \"placeholder\": \"可填写特殊要求（选填）\"}]',1,'2025-11-13 05:04:20'),
+('1988834356283133954','外卖代取','🍔','#FFEBEE','[{\"name\": \"location\", \"type\": \"input\", \"label\": \"取餐点\", \"required\": true, \"placeholder\": \"请输入取餐点\"}, {\"icon\": \"search\", \"name\": \"code\", \"type\": \"input\", \"label\": \"取餐码\", \"private\": true, \"required\": true, \"placeholder\": \"请输入取餐码\"}, {\"name\": \"remark\", \"type\": \"textarea\", \"label\": \"备注信息\", \"required\": false, \"maxLength\": 200, \"placeholder\": \"可填写特殊要求（选填）\"}]',1,'2025-11-13 05:04:20'),
+('1988834358631944193','搬运物品','🧑‍🔧','#FFFDE7','[{\"name\": \"location\", \"type\": \"input\", \"label\": \"取件点\", \"required\": true, \"placeholder\": \"请输入取件点\"}, {\"name\": \"description\", \"type\": \"textarea\", \"label\": \"物品描述\", \"required\": true, \"maxLength\": 300, \"placeholder\": \"请描述需要搬运的物品\"}, {\"name\": \"weight\", \"type\": \"input\", \"label\": \"预估重量\", \"required\": false, \"inputType\": \"number\", \"placeholder\": \"请输入预估重量（kg）\"}, {\"name\": \"count\", \"type\": \"input\", \"label\": \"物品数量\", \"required\": true, \"inputType\": \"number\", \"placeholder\": \"请输入物品数量\", \"defaultValue\": 1}, {\"name\": \"remark\", \"type\": \"textarea\", \"label\": \"备注信息\", \"required\": false, \"maxLength\": 200, \"placeholder\": \"可填写特殊要求（选填）\"}]',1,'2025-11-13 05:04:20'),
+('1988834360792010753','代买商品','🛒','#E8F5E9','[{\"name\": \"location\", \"type\": \"input\", \"label\": \"代买点\", \"required\": true, \"placeholder\": \"请输入代买点\"}, {\"name\": \"description\", \"type\": \"textarea\", \"label\": \"商品描述\", \"required\": true, \"maxLength\": 300, \"placeholder\": \"请描述需要购买的商品\"}, {\"name\": \"count\", \"type\": \"input\", \"label\": \"购买数量\", \"required\": true, \"inputType\": \"number\", \"placeholder\": \"请输入购买数量\", \"defaultValue\": 1}, {\"name\": \"price\", \"type\": \"input\", \"label\": \"商品价格\", \"required\": true, \"inputType\": \"number\", \"placeholder\": \"请输入商品价格（元）\"}, {\"name\": \"remark\", \"type\": \"textarea\", \"label\": \"备注信息\", \"required\": false, \"maxLength\": 200, \"placeholder\": \"可填写特殊要求（选填）\"}]',1,'2025-11-13 05:04:20');
 
 CREATE TABLE `school` (
   `sid` int NOT NULL AUTO_INCREMENT,
   `sname` varchar(100) NOT NULL,
   PRIMARY KEY (`sid`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='学校表'
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='学校表';
 
 CREATE TABLE `transaction` (
   `tid` varchar(50) NOT NULL COMMENT '交易id',
@@ -95,10 +106,8 @@ CREATE TABLE `transaction` (
   PRIMARY KEY (`tid`),
   KEY `transaction_order_oid_fk` (`oid`),
   KEY `transaction_user_uid_fk` (`uid`),
-  CONSTRAINT `transaction_order_oid_fk` FOREIGN KEY (`oid`) REFERENCES `order` (`oid`),
-  CONSTRAINT `transaction_user_uid_fk` FOREIGN KEY (`uid`) REFERENCES `user` (`uid`),
   CONSTRAINT `ck_amount` CHECK ((`amount` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='交易记录表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='交易记录表';
 
 CREATE TABLE `user` (
   `uid` char(36) NOT NULL COMMENT '用户ID',
@@ -115,7 +124,11 @@ CREATE TABLE `user` (
   UNIQUE KEY `unique_uid` (`uid`),
   UNIQUE KEY `unique_openid` (`openid`),
   CONSTRAINT `chk_amount_non_negative` CHECK ((`balance` >= 0))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户表';
+INSERT INTO `user` VALUES
+('b2e6a3d8-300d-43b1-a212-3aa7a49e2a9b','oa4ZW6m3PuZunLGNmpRvvMkI7ZYs','知非',1,1,'18525760180','http://localhost:9000/pao/avatar/b2e6a3d8-300d-43b1-a212-3aa7a49e2a9b.jpeg','2025-09-11 10:32:46',99.00,1),
+('e2876d4f-00bf-44b6-b443-8d388e6a7ec2','oa4ZW6jYD_Bihl9x68yC25Uv4ZRg','小程ouo',0,2,'18156976064','http://localhost:9000/pao/avatar/e2876d4f-00bf-44b6-b443-8d388e6a7ec2.jpeg','2025-10-13 11:05:59',95.00,1),
+('ef76abfd-0f23-4be7-83c6-8395a8239dbd','oa4ZW6o9nPNaF9edWd4VMv3DXrMs','carp',-1,0,'19818661477',NULL,'2025-10-12 14:35:29',101.45,1);
 
 CREATE TABLE `sys_config` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -128,6 +141,11 @@ CREATE TABLE `sys_config` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_sys_config_key` (`config_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='系统参数';
+INSERT INTO `sys_config` VALUES
+(1,'system.name','东跑跑','string','系统名称','2026-02-27 13:17:20','2026-02-27 13:17:47'),
+(2,'system.version','1.0.0','string','系统版本','2026-02-27 13:17:20','2026-02-27 13:17:20'),
+(3,'upload.maxSize','10','number','上传文件大小限制(MB)','2026-02-27 13:17:20','2026-02-27 13:17:20'),
+(4,'app.maintenance','false','boolean','是否维护模式','2026-02-27 13:17:20','2026-02-27 13:17:20');
 
 CREATE TABLE `sys_login_log` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -158,6 +176,22 @@ CREATE TABLE `sys_menu` (
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='菜单权限';
+INSERT INTO `sys_menu` VALUES
+(1,0,'首页','/home','home',NULL,'M','House',1,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(2,0,'业务管理',NULL,NULL,NULL,'M','Box',2,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(3,2,'订单管理','/orders','orders',NULL,'C',NULL,1,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(4,2,'用户管理','/users','users',NULL,'C',NULL,2,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(5,2,'学校管理','/schools','schools',NULL,'C',NULL,3,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(6,2,'订单类型','/order-types','order-types',NULL,'C',NULL,4,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(7,0,'系统设置','/settings','settings',NULL,'C','Setting',3,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(8,0,'系统管理',NULL,NULL,NULL,'M','Setting',4,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(9,8,'角色管理','/system/roles','system/roles',NULL,'C',NULL,1,1,1,'2026-02-21 12:59:53','2026-02-21 12:59:53'),
+(10,8,'后台账号管理','/system/admins','system/admins',NULL,'C',NULL,2,1,1,'2026-02-21 12:59:39','2026-02-21 12:59:39'),
+(11,0,'小程序配置',NULL,NULL,NULL,'M','Document',5,1,1,'2026-02-21 17:29:55','2026-02-22 14:17:54'),
+(12,11,'开屏设置','/operate/splash','operate/splash',NULL,'C',NULL,1,1,1,'2026-02-21 17:29:55','2026-02-21 17:29:55'),
+(13,11,'滚动通知','/operate/notices','operate/notices',NULL,'C',NULL,2,1,1,'2026-02-21 17:29:55','2026-02-21 17:29:55'),
+(14,11,'商家推广','/operate/business-promotion','operate/business-promotion',NULL,'C',NULL,3,1,1,'2026-02-21 17:29:55','2026-02-21 17:29:55'),
+(15,11,'首页轮播','/operate/banner','operate/banner',NULL,'C',NULL,4,1,1,'2026-02-21 17:29:55','2026-02-21 17:29:55');
 
 CREATE TABLE `sys_oper_log` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -195,6 +229,9 @@ CREATE TABLE `sys_role_menu` (
   `menu_id` bigint NOT NULL COMMENT '菜单ID',
   PRIMARY KEY (`role_id`, `menu_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='角色菜单关联';
+INSERT INTO `sys_role_menu` VALUES
+(1,1),(1,2),(1,3),(1,4),(1,5),(1,6),(1,7),(1,8),(1,9),(1,10),(1,11),(1,12),(1,13),
+(1,14),(1,15),(2,1),(2,2),(2,3),(2,4),(2,5),(2,6);
 
 CREATE TABLE `sys_statistics` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -227,6 +264,7 @@ CREATE TABLE `sys_user_role` (
   `role_id` bigint NOT NULL COMMENT '角色ID',
   PRIMARY KEY (`user_id`, `role_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='用户角色关联';
+INSERT INTO `sys_user_role` VALUES (1,1);
 
 CREATE TABLE `app_splash` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -267,6 +305,9 @@ CREATE TABLE `app_business_promotion` (
   PRIMARY KEY (`id`),
   KEY `idx_app_business_promotion_status_sort` (`status`, `sort`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='首页商家推广';
+INSERT INTO `app_business_promotion` VALUES
+(1,'喜禾自助小火锅','29.9元一位，无其他费用','http://localhost:9000/pao/business-promotion/552f30d013774d0f85a6108cbb07f8c7.png','[\"便宜\",\"价格透明\",\"百种菜系\"]','￥29.9/位',0,1,'2026-02-22 03:04:03','2026-02-22 13:39:37'),
+(3,'齐品达烤肉饭','线下门店，干净又卫生，欢迎品尝','http://localhost:9000/pao/business-promotion/e90a3230437c46798d4d97d6fa9576ca.jpeg','[\"便宜好吃\",\"干净卫生\"]','￥10',0,1,'2026-02-22 03:13:09','2026-02-22 03:13:09');
 
 CREATE TABLE `app_banner` (
   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
