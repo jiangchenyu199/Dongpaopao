@@ -1,4 +1,4 @@
-# dongpaopao MVP 项目章程与需求建模
+# dongpaopao
 
 ## 1. 项目章程
 
@@ -30,9 +30,6 @@
 - 管理员可在 Web 端查看并处理订单/用户
 - OpenAPI 文档可访问（OpenAPI 3.1 + springdoc）
 - PostgreSQL / Redis / JWT 链路可运行
-
-### 1.6 版本命名
-`v0.1.0-mvp`
 
 ---
 
