@@ -1,4 +1,4 @@
--- dongpaopao MVP PostgreSQL DDL (v1 draft)
+-- dongpaopao PostgreSQL DDL (v1 draft)
 -- stack: Spring Boot 4 + PostgreSQL + Redis + JWT
 -- note: Redis/JWT configuration is not part of relational DDL.
 
