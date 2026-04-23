@@ -17,3 +17,52 @@
 body {
   margin: 0;
 }
+
+#app {
+  min-height: 100vh;
+}
+
+.app-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #111827;
+  color: #f9fafb;
+  padding: 20px 16px;
+}
+
+.brand {
+  margin: 0 0 20px;
+  font-size: 18px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  color: #d1d5db;
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background: #1f2937;
+  color: #fff;
+}
+
+.nav-item.active {
+  background: #2563eb;
+  color: #fff;
+}
+
+.main {
+  padding: 24px;
+}
