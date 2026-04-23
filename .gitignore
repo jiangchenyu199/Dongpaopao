@@ -1,0 +1,4 @@
+/apps/admin-web/node_modules/
+/apps/admin-web/dist/
+/apps/backend/.gradle/
+/apps/backend/build/
